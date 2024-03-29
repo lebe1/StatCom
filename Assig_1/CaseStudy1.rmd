@@ -1,0 +1,338 @@
+---
+title: "Case Study 1"
+subtitle: "Group 97 - R Programming"
+author:
+  - Beccard\, Leon
+  - Farmohammadi\, Pouya
+  - Monteiro Oliveira\, Guilherme - 12243299
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: True
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    toc_depth: 1
+    theme: readable
+    # number_sections: True
+editor_options: 
+  markdown: 
+    wrap: 80
+---
+
+--------------------------------------------------------------------------------
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1. Ratio of Fibonacci numbers
+
+## a.
+
+Write two different R functions which return the sequence ri = Fi+1 /Fi for i =
+1, . . . , n where Fi is the ith Fibonacci number, once using for and once using
+while.
+
+For understanding the sequence, it is as follows\
+Fibonacci sequence: 0,1,1,2,3,5,8,13,21,..., with 0 as F0
+
+-   r1 = F2/F1 = 1/1 = 1\
+-   r2 = F3/F2 = 2/1 = 2\
+-   r3 = F4/F3 = 3/2 = 1.5
+
+**For loop**
+
+```{r fib_ratio_for}
+fib_ratio_for <- function(n) {
+  # Check for bad inputs
+  if (n <= 0) {
+    stop("Input 'n' cannot be 0 or negative.")
+  } else if (n == 1) {
+    # Catch case of n = 1 due to a leading error if not implemented
+    return(1)
+  } else {
+    # numeric vector created with length n + 1 
+    # to store the Fibonacci sequence up to the (n + 1)th element.
+    fibonacci <- numeric(n + 1) 
+    # Assign values (1,1) as first two elements
+    fibonacci[1:2] <- c(1, 1)
+    # for loop that iterates over the sequence 3:(n + 1)
+    # starting from 3 because first two elements are already declared
+    for (i in 3:(n + 1)) {
+      # Assigning Fibonacci rule to get the next number out of the last two
+      fibonacci[i] <- fibonacci[i - 1] + fibonacci[i - 2]
+    }
+    # Finally calculate the ratio of each fibonacci number
+    ratios <- fibonacci[2:(n + 1)] / fibonacci[1:n]
+    return(ratios)
+  }
+}
+```
+
+Execute for loop:
+
+```{r fib_ratio_for(5)}
+fib_ratio_for(5)
+```
+
+**While loop**
+
+```{r fib_ratio_while}
+fib_ratio_while <- function(n) {
+  if (n <= 0) {
+    stop("Input 'n' cannot be 0 or negative.")
+  } else if (n == 1) {
+    return(1)
+  } else {
+    fibonacci <- numeric(n + 1)
+    fibonacci[1:2] <- c(1, 1)
+    i <- 3
+    while (i <= n + 1) {
+      fibonacci[i] <- fibonacci[i - 1] + fibonacci[i - 2]
+      i <- i + 1
+    }
+    ratios <- fibonacci[2:(n + 1)] / fibonacci[1:n]
+    return(ratios)
+  }
+}
+```
+
+Execute while loop:
+
+```{r fib_ratio_while(7)}
+fib_ratio_while(7)
+```
+
+## b.
+
+Benchmark the two functions for n = 200 and n = 2000 (you can use package
+microbenchmark or package bench for this purpose). Which function is faster?
+
+```{r benchmark}
+# install.packages('microbenchmark')
+library(microbenchmark)
+
+microbenchmark(
+  fib_ratio_for(200),
+  fib_ratio_while(200),
+  fib_ratio_for(2000),
+  fib_ratio_while(2000)
+)
+```
+
+**Explanation for statistics given from microbenchmark**\
+min: Minimum time it took to execute\
+lq: Lower quartile (25th percentile) time it took to execute\
+mean: Mean time it took to execute\
+median: Median time it took to execute\
+uq: Upper quartile (75th percentile) time it took to execute\
+max: Maximum time it took to execute\
+neval: Number of times each expression was evaluated
+
+**Answer:** As given from the stats, the function using the for loop is faster.
+
+## c.
+
+Plot the sequence for n = 100. For which value n it starts to converge?\
+What is the number that it converges to?
+
+```{r plot}
+# Calculate the sequence for n = 100
+sequence <- fib_ratio_for(100)
+
+# Plot the sequence
+plot(sequence, type = "l", xlab = "Index (i)", ylab = "Ratio (r_i)",
+     main = "Sequence of Fibonacci Ratios for n = 100")
+
+```
+
+```{r tail_sequence}
+# Get the last 6 values to know what number it converges to
+tail(sequence)
+```
+
+**Answer:** It converges towards the 1.618034. The so-called golden ratio.
+
+# 2. Gamma function
+
+## a.
+
+## b.
+
+## c.
+
+## d.
+
+# 3. The golden ration
+
+## a.
+
+## b.
+
+## c.
+
+# 4. Game of craps
+
+A variation of game of craps is played as follows. The player rolls a die and if
+they roll a 6, they immediately wins. If a 1 is rolled, they immediately loses.
+If a 2, 3, 4, or 5 is rolled, then this number becomes their “point number.’ ’
+The player then has up to three more rolls of the die to roll their point number
+again. If they do, they win otherwise they lose. Write a program in R to
+simulate a game of craps. Explain the steps of your program. If the code is not
+explained, no points will be earned.
+
+```{r game_of_crabs}
+# Define the function for a game of crabs
+game_of_craps <- function(){
+    # Function to get a random number between 1 and 6 i.e. rolling the dice once
+    dice_number <- floor(runif(1, min=1, max=7))
+    # check for win or lose condition in first attempt
+    if (dice_number == 1){
+      return("Sorry, you lost!")
+    }
+    else if (dice_number == 6){
+      return("Yeah, you won in the first attempt!")
+    }
+    else {
+      # for loop to have three more attempts to roll the same 'point number'
+      for (i in 1:3){
+        # Function to get a random number between 1 and 6 i.e. rolling the dice once
+        new_dice_number <- floor(runif(1, min=1, max=7))
+        # Check for same 'point number'
+        if (dice_number == new_dice_number){
+          return("Yeah, you won rolling the same 'point number' again!")
+        }
+    }
+  } 
+  return("Sorry, you lost after three more attempts!")
+}
+
+# Execute function i.e. one simulation of the game
+game_of_craps()
+
+```
+
+# 5. Readable and efficient code
+
+## a.
+
+## b.
+
+## c.
+
+--------------------------------------------------------------------------------
+
+# 6. Measuring and improving performance
+
+Have a look at the code of the function below. It is a function for performing a
+Kruskal Wallis test, a robust non-parametric method for testing whether samples
+come from the same distribution. (Note: we assume no missing values are present
+in x).
+
+```{r Kruskal_Wallis_test}
+
+kwtest <- function (x, g, ...)
+{
+  if (is.list(x)) {
+    if (length(x) < 2L)
+      stop("'x' must be a list with at least 2 elements")
+    if (!missing(g))
+      warning("'x' is a list, so ignoring argument 'g'")
+    if (!all(sapply(x, is.numeric)))
+      warning("some elements of 'x' are not numeric and will be coerced to numeric")
+    k <- length(x)
+    l <- lengths(x)
+    if (any(l == 0L))
+      stop("all groups must contain data")
+    g <- factor(rep.int(seq_len(k), l))
+    x <- unlist(x)
+}
+else {
+  if (length(x) != length(g))
+    stop("'x' and 'g' must have the same length")
+  g <- factor(g)
+  k <- nlevels(g)
+  if (k < 2L)
+    stop("all observations are in the same group")
+}
+n <- length(x)
+if (n < 2L)
+  stop("not enough observations")
+r <- rank(x)
+TIES <- table(x)
+STATISTIC <- sum(tapply(r, g, sum)^2/tapply(r, g, length))
+STATISTIC <- ((12 * STATISTIC/(n * (n + 1)) - 3 * (n + 1))/(1 -
+  sum(TIESˆ3 - TIES)/(nˆ3 - n)))
+PARAMETER <- k - 1L
+PVAL <- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
+names(STATISTIC) <- "Kruskal-Wallis chi-squared"
+names(PARAMETER) <- "df"
+RVAL <- list(statistic = STATISTIC, parameter = PARAMETER,
+  p.value = PVAL, method = "Kruskal-Wallis rank sum test")
+return(RVAL)
+}
+
+```
+
+## Solution {.tabset}
+
+### **a. Pseudo code**
+
+This is a test
+```{r pseudo_code, eval=FALSE}
+
+kwtest2 <- function (x, g, ...)
+{
+  if (is.list(x)) {
+    if (length(x) < 2L)
+      stop("'x' must be a list with at least 2 elements")
+    if (!missing(g))
+      warning("'x' is a list, so ignoring argument 'g'")
+    if (!all(sapply(x, is.numeric)))
+      warning("some elements of 'x' are not numeric and will be coerced to numeric")
+    k <- length(x)
+    l <- lengths(x)
+    if (any(l == 0L))
+      stop("all groups must contain data")
+    g <- factor(rep.int(seq_len(k), l))
+    x <- unlist(x)
+}
+else {
+  if (length(x) != length(g))
+    stop("'x' and 'g' must have the same length")
+  g <- factor(g)
+  k <- nlevels(g)
+  if (k < 2L)
+    stop("all observations are in the same group")
+}
+  
+}
+
+```
+
+### b.
+
+## a.
+
+## b.
+
+## c.
+
+## d.
+
+## e.
+
+## f.
+
+## g.
+
+## Quarterly Results {.tabset}
+
+### By Product
+
+(tab content)
+
+### By Region
+
+(tab content)
