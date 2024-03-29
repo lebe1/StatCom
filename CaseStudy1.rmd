@@ -117,7 +117,7 @@ Plot the sequence for n = 100. For which value n it starts to converge?
 What is the number that it converges
 to?
 
-```{r pressure}
+```{r plot}
 # Calculate the sequence for n = 100
 sequence <- fib_ratio_for(100)
 
@@ -133,3 +133,42 @@ tail(sequence)
 ```
 
 **Answer:** It converges towards the 1.618034. The so-called golden ratio.
+
+## Task 4 Game of craps
+
+A variation of game of craps is played as follows. The player rolls a die and if they roll a 6, they immediately
+wins. If a 1 is rolled, they immediately loses. If a 2, 3, 4, or 5 is rolled, then this number becomes their “point
+number.’ ’ The player then has up to three more rolls of the die to roll their point number again. If they do,
+they win otherwise they lose. Write a program in R to simulate a game of craps. Explain the steps of your
+program. If the code is not explained, no points will be earned.
+
+```{r game_of_crabs}
+# Define the function for a game of crabs
+game_of_craps <- function(){
+    # Function to get a random number between 1 and 6 i.e. rolling the dice once
+    dice_number <- floor(runif(1, min=1, max=7))
+    # check for win or lose condition in first attempt
+    if (dice_number == 1){
+      return("Sorry, you lost!")
+    }
+    else if (dice_number == 6){
+      return("Yeah, you won in the first attempt!")
+    }
+    else {
+      # for loop to have three more attempts to roll the same 'point number'
+      for (i in 1:3){
+        # Function to get a random number between 1 and 6 i.e. rolling the dice once
+        new_dice_number <- floor(runif(1, min=1, max=7))
+        # Check for same 'point number'
+        if (dice_number == new_dice_number){
+          return("Yeah, you won rolling the same 'point number' again!")
+        }
+    }
+  } 
+  return("Sorry, you lost after three more attempts!")
+}
+
+# Execute function i.e. one simulation of the game
+game_of_craps()
+
+```
