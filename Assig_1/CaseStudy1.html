@@ -13,7 +13,7 @@
 <meta name="author" content="Farmohammadi, Pouya" />
 <meta name="author" content="Monteiro Oliveira, Guilherme - 12243299" />
 
-<meta name="date" content="2024-03-29" />
+<meta name="date" content="2024-04-03" />
 
 <title>Case Study 1</title>
 
@@ -1498,7 +1498,7 @@ border-radius: 0px;
 <h4 class="author">Beccard, Leon</h4>
 <h4 class="author">Farmohammadi, Pouya</h4>
 <h4 class="author">Monteiro Oliveira, Guilherme - 12243299</h4>
-<h4 class="date">2024-03-29</h4>
+<h4 class="date">2024-04-03</h4>
 
 </div>
 
@@ -1585,11 +1585,11 @@ microbenchmark(
   fib_ratio_while(2000)
 )</code></pre>
 <pre><code>## Unit: microseconds
-##                   expr     min       lq     mean   median       uq       max
-##     fib_ratio_for(200)  49.515  65.5495 535.8687  67.9625  71.4730 46898.455
-##   fib_ratio_while(200)  56.328  91.6400 259.3683  94.5035  97.9670 16775.779
-##    fib_ratio_for(2000) 428.356 593.9015 600.4057 621.5740 640.5095   699.451
-##  fib_ratio_while(2000) 565.521 854.0155 849.0585 886.4380 901.1350  1012.710
+##                   expr     min       lq      mean  median      uq       max
+##     fib_ratio_for(200)  61.197  62.9040  65.20995  64.922  66.701    74.425
+##   fib_ratio_while(200)  84.968  88.8810 569.11339  90.905  92.547 47816.049
+##    fib_ratio_for(2000) 569.731 584.5495 757.49067 588.052 607.498 16517.178
+##  fib_ratio_while(2000) 835.937 844.7060 862.92321 855.007 874.099   995.420
 ##  neval
 ##    100
 ##    100
@@ -1690,19 +1690,105 @@ game_of_craps &lt;- function(){
 
 # Execute function i.e. one simulation of the game
 game_of_craps()</code></pre>
-<pre><code>## [1] &quot;Yeah, you won rolling the same &#39;point number&#39; again!&quot;</code></pre>
+<pre><code>## [1] &quot;Sorry, you lost after three more attempts!&quot;</code></pre>
+<hr />
 </div>
 <div id="readable-and-efficient-code" class="section level1">
 <h1>5. Readable and efficient code</h1>
-<div id="a.-3" class="section level2">
-<h2>a.</h2>
+<p>Read over the code below.</p>
+<pre class="r"><code>set.seed(1)
+x &lt;- rnorm(1000)
+y &lt;- 2 + x + rnorm(1000)
+df &lt;- data.frame(x, y)
+
+cat(&quot;Step&quot;, 1, &quot;\n&quot;)
+fit1 &lt;- lm(y ~ x, data = df[-(1:250),])
+p1 &lt;- predict(fit1, newdata = df[(1:250),])
+r &lt;- sqrt(mean((p1 - df[(1:250),&quot;y&quot;])^2))
+
+cat(&quot;Step&quot;, 2, &quot;\n&quot;)
+fit2 &lt;- lm(y ~ x, data = df[-(251:500),])
+p2 &lt;- predict(fit2, newdata = df[(251:500),])
+r &lt;- c(r, sqrt(mean((p2 - df[(251:500),&quot;y&quot;])^2)))
+
+cat(&quot;Step&quot;, 3, &quot;\n&quot;)
+fit3 &lt;- lm(y ~ x, data = df[-(501:750),])
+p3 &lt;- predict(fit3, newdata = df[(501:750),])
+r &lt;- c(r, sqrt(mean((p3 - df[(501:750),&quot;y&quot;])^2)))
+
+cat(&quot;Step&quot;, 4, &quot;\n&quot;)
+fit4 &lt;- lm(y ~ x, data = df[-(751:1000),])
+p4 &lt;- predict(fit4, newdata = df[(751:1000),])
+r &lt;- c(r, sqrt(mean((p4 - df[(751:1000),&quot;y&quot;])^2)))
+r</code></pre>
+<div id="solution" class="section level2 tabset">
+<h2 class="tabset">Solution</h2>
+<div id="a.-explain-the-code" class="section level3">
+<h3>a. Explain the code</h3>
+<p>The code initially generates an random variable x defined by a normal
+distribution with mean and standard deviation of 1. Then, it generates
+another <em>noise</em> variable with the same characteristics as x and y
+is a combination of x, the noise and a constant of 2.</p>
+<p>Each step consist of r selecting different sections of the data frame
+df with a proportion of 75% to 25% for training and testing respectively
+and calculate the root mean square error for each step. The error for
+each steps are 1.0249956, 0.9952113, 1.06855, 1.0707264 and the biggest
+gap between the errors is 0.0755151, what is doesn’t looks like
+outstanding.</p>
 </div>
-<div id="b.-3" class="section level2">
-<h2>b.</h2>
+<div id="b.-readability" class="section level3">
+<h3>b. Readability</h3>
+<p>From the code we can notice a few things:</p>
+<ul>
+<li>The code is repeating itself a few times and run it in a loop or
+call functions to avoid code repetition would make it more
+readable.</li>
+<li>The code could write more comments in the code to give us an
+abstraction of what he is planning to do and inline comment to give us
+specific details, like the definition of the variable x.</li>
+<li>Use meaningful names can make it easier to understand the code, like
+<em>pred1</em>, instead of <em>p1</em>.</li>
+</ul>
 </div>
-<div id="c.-3" class="section level2">
-<h2>c.</h2>
+<div id="c.-wrap-function" class="section level3">
+<h3>c. Wrap Function</h3>
+<p>Change the code according to a. and wrap it in a function. This
+function should have at most 10 lines (without adding commands to more
+lines such as x &lt;- 1; y &lt;- 2. Such commands will count as 2
+lines!). Check that the function called on the same input outputs the
+same as the provided code.</p>
+<pre class="r"><code># Define the function
+
+linear_models &lt;- function(df, formula, steps = 4) {
+  # Create an empty vector to store the errors
+  r &lt;- numeric()
+  step = nrow(df)/steps
+  # Loop through the steps
+  for (i in 1:steps) {
+    cat(&quot;Step&quot;, i, &quot;\n&quot;)
+    section &lt;- ((i-1)*step+1):(i*step)
+    fit &lt;- lm(formula, data = df[-section,]) # Fit the model
+    p &lt;- predict(fit, newdata = df[section,]) # Predict the model
+    r &lt;- c(r, sqrt(mean((p - df[section,&quot;y&quot;])^2)))
+  }
+  return(r)
+}
+
+set.seed(1)
+x &lt;- rnorm(1000)
+y &lt;- 2 + x + rnorm(1000)
+df &lt;- data.frame(x, y)
+
+# Execute the function
+
+linear_models(df, y ~ x)</code></pre>
+<pre><code>## Step 1 
+## Step 2 
+## Step 3 
+## Step 4 
+## [1] 1.0249956 0.9952113 1.0685500 1.0707264</code></pre>
 <hr />
+</div>
 </div>
 </div>
 <div id="measuring-and-improving-performance" class="section level1">
@@ -1751,7 +1837,7 @@ RVAL &lt;- list(statistic = STATISTIC, parameter = PARAMETER,
   p.value = PVAL, method = &quot;Kruskal-Wallis rank sum test&quot;)
 return(RVAL)
 }</code></pre>
-<div id="solution" class="section level2 tabset">
+<div id="solution-1" class="section level2 tabset">
 <h2 class="tabset">Solution</h2>
 <div id="a.-pseudo-code" class="section level3">
 <h3><strong>a. Pseudo code</strong></h3>
@@ -1783,17 +1869,17 @@ else {
   
 }</code></pre>
 </div>
-<div id="b.-4" class="section level3">
+<div id="b.-3" class="section level3">
 <h3>b.</h3>
 </div>
 </div>
-<div id="a.-4" class="section level2">
+<div id="a.-3" class="section level2">
 <h2>a.</h2>
 </div>
-<div id="b.-5" class="section level2">
+<div id="b.-4" class="section level2">
 <h2>b.</h2>
 </div>
-<div id="c.-4" class="section level2">
+<div id="c.-3" class="section level2">
 <h2>c.</h2>
 </div>
 <div id="d.-1" class="section level2">

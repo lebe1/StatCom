@@ -213,13 +213,100 @@ game_of_craps()
 
 ```
 
+--------------------------------------------------------------------------------
+
 # 5. Readable and efficient code
 
-## a.
+Read over the code below.
 
-## b.
+```{r redable, results='hide'}
 
-## c.
+set.seed(1)
+x <- rnorm(1000)
+y <- 2 + x + rnorm(1000)
+df <- data.frame(x, y)
+
+cat("Step", 1, "\n")
+fit1 <- lm(y ~ x, data = df[-(1:250),])
+p1 <- predict(fit1, newdata = df[(1:250),])
+r <- sqrt(mean((p1 - df[(1:250),"y"])^2))
+
+cat("Step", 2, "\n")
+fit2 <- lm(y ~ x, data = df[-(251:500),])
+p2 <- predict(fit2, newdata = df[(251:500),])
+r <- c(r, sqrt(mean((p2 - df[(251:500),"y"])^2)))
+
+cat("Step", 3, "\n")
+fit3 <- lm(y ~ x, data = df[-(501:750),])
+p3 <- predict(fit3, newdata = df[(501:750),])
+r <- c(r, sqrt(mean((p3 - df[(501:750),"y"])^2)))
+
+cat("Step", 4, "\n")
+fit4 <- lm(y ~ x, data = df[-(751:1000),])
+p4 <- predict(fit4, newdata = df[(751:1000),])
+r <- c(r, sqrt(mean((p4 - df[(751:1000),"y"])^2)))
+r
+
+```
+
+
+## Solution {.tabset}
+
+### a. Explain the code
+
+The code initially generates an random variable x defined by a normal distribution 
+with mean  and standard deviation of 1. Then, it generates another *noise* variable with the same characteristics as x and y is a combination of x, the noise and a constant of 2. 
+
+Each step consist of r selecting different sections of the data frame df with a proportion of 
+75% to 25% for training and testing respectively and calculate the root mean square error for each step.
+The error for each steps are `r r` and the biggest gap between the errors is  `r max(r) - min(r)`, what is doesn't looks like outstanding.
+
+
+### b. Readability
+
+From the code we can notice a few things:
+
+* The code is repeating itself a few times and run it in a loop or call functions to avoid code repetition would make it more readable. 
+* The code could write more comments in the code to give us an abstraction of what he is planning to do and inline comment to give us specific details, like the definition of the variable x.
+* Use meaningful names can make it easier to understand the code, like *pred1*, instead of *p1*.
+
+
+### c. Wrap Function
+
+Change the code according to a. and wrap it in a function. This function should have at most 10 lines
+(without adding commands to more lines such as x <- 1; y <- 2. Such commands will count as 2 lines!).
+Check that the function called on the same input outputs the same as the provided code. 
+
+```{r efficient_5, results='hold'}
+
+# Define the function
+
+linear_models <- function(df, formula, steps = 4) {
+  # Create an empty vector to store the errors
+  r <- numeric()
+  step = nrow(df)/steps
+  # Loop through the steps
+  for (i in 1:steps) {
+    cat("Step", i, "\n")
+    section <- ((i-1)*step+1):(i*step)
+    fit <- lm(formula, data = df[-section,]) # Fit the model
+    p <- predict(fit, newdata = df[section,]) # Predict the model
+    r <- c(r, sqrt(mean((p - df[section,"y"])^2)))
+  }
+  return(r)
+}
+
+set.seed(1)
+x <- rnorm(1000)
+y <- 2 + x + rnorm(1000)
+df <- data.frame(x, y)
+
+# Execute the function
+
+linear_models(df, y ~ x)
+
+```
+
 
 --------------------------------------------------------------------------------
 
@@ -280,6 +367,7 @@ return(RVAL)
 ### **a. Pseudo code**
 
 This is a test
+
 ```{r pseudo_code, eval=FALSE}
 
 kwtest2 <- function (x, g, ...)
