@@ -348,10 +348,12 @@ if (n < 2L)
   stop("not enough observations")
 r <- rank(x)
 TIES <- table(x)
+
 STATISTIC <- sum(tapply(r, g, sum)^2/tapply(r, g, length))
 STATISTIC <- ((12 * STATISTIC/(n * (n + 1)) - 3 * (n + 1))/(1 -
-  sum(TIESˆ3 - TIES)/(nˆ3 - n)))
+  sum(TIES^3 - TIES)/(n^3 - n)))
 PARAMETER <- k - 1L
+
 PVAL <- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
 names(STATISTIC) <- "Kruskal-Wallis chi-squared"
 names(PARAMETER) <- "df"
@@ -370,57 +372,136 @@ This is a test
 
 ```{r pseudo_code, eval=FALSE}
 
-kwtest2 <- function (x, g, ...)
+kwtest_pseudo <- function (x, g, ...)
 {
-  if (is.list(x)) {
-    if (length(x) < 2L)
-      stop("'x' must be a list with at least 2 elements")
-    if (!missing(g))
-      warning("'x' is a list, so ignoring argument 'g'")
-    if (!all(sapply(x, is.numeric)))
-      warning("some elements of 'x' are not numeric and will be coerced to numeric")
+  if x is a list {
+    if x has less than 2 elements
+      Do not continue with the code and inform the user
+    if g is provided
+      Give a warning to the user that g will be ignored
+    if all the elemensts of x are not numeric
+      Warns the users that some elements are not numeric and will be converted 
+      to numeric
     k <- length(x)
     l <- lengths(x)
-    if (any(l == 0L))
-      stop("all groups must contain data")
+    if any element of x is 0
+      Stop and inform that all the groups should contain data
     g <- factor(rep.int(seq_len(k), l))
     x <- unlist(x)
-}
-else {
-  if (length(x) != length(g))
-    stop("'x' and 'g' must have the same length")
-  g <- factor(g)
-  k <- nlevels(g)
-  if (k < 2L)
-    stop("all observations are in the same group")
-}
+  }
+  if x is not a list {
+    if the length of x and g are different
+      Stops and inform the user x and g should be the same length
+    g <- factor(g)
+    k <- nlevels(g)
+    if there are less than 2 groups in g
+      Stop and inform the user
+  }
+  n <- length(x)
+  if x length is less than 2
+    Stop and inform about the lack of observations
+  r <- rank(x)
+  TIES <- table(x)
+  STATISTIC <- Calculate the Kruskal-Wallis statistic
+  PARAMETER <- degree of freedom
+  PVAL <- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
+  names(STATISTIC) <- "Kruskal-Wallis chi-squared"
+  names(PARAMETER) <- "df"
+  RVAL <- list(statistic = STATISTIC, parameter = PARAMETER,
+  p.value = PVAL, method = "Kruskal-Wallis rank sum test")
+  return(RVAL)
   
 }
 
 ```
 
-### b.
+### **b. Example call**
 
-## a.
+```{r example_call, results="hold"}
 
-## b.
+# Example with list
 
-## c.
+x_list <- list(
+  group1 = c(1, 3, 4, 2),
+  group2 = c(2, 6, 1, 7)
+)
 
-## d.
+# Example with vector
 
-## e.
+x_vector <- c(1, 3, 4, 2, 2, 6, 1, 7)
+g_vector <- c(1, 1, 1, 1, 2, 2, 2, 2) # group labels
 
-## f.
+result_list <- kwtest(x_list)
+result_vector <- kwtest(x_vector, g_vector)
 
-## g.
+print("Result using x as list:")
+print(result_list)
 
-## Quarterly Results {.tabset}
+print("Result using x as vector:")
+print(result_vector)
 
-### By Product
 
-(tab content)
+```
 
-### By Region
 
-(tab content)
+### **c. kwtest faster**
+
+```{r kwtest_faster, results='hold'}
+
+kwtest_fast <- function(x, g, ...) {
+  if (!is.numeic(x) | !is.numeric(g)) {
+    stop("x and g must be numeric vectors")
+  }
+  
+  if (length(x) != length(g)) {
+    stop("x and g must have the same length")
+  }
+  
+  N <- length(x)
+  number_groups <- nlevels(factor(g))
+  obs_group <- table(g)
+  r <- rank(x)
+  r_group_avg <- tapply(r, g, sum)/obs_group
+  r_avg <- (N + 1)/2
+  
+  H_num <-(N - 1) * sum(obs_group * (r_group_avg - r_avg)**2)
+  H_dem <- sum((r - r_avg)**2)
+  
+  H <- H_num/H_dem
+  
+}
+
+```
+
+### d. Multiple experiments
+
+```{r}
+set.seed(1234)
+m <- 1000 # number of repetitions
+n <- 50
+# number of individuals
+X <- matrix(rt(m * n, df = 10), nrow = m)
+grp <- rep(1:3, c(20, 20, 10))
+
+
+kwtest_matrix <- function(X, grp) {
+  res <- apply(X, 1, function(x) kwtest(x, grp))
+}
+
+# Returns all the statistics from res
+
+res <- kwtest_matrix(X, grp)
+
+# Extract the p-values
+
+p_values <- sapply(res, function(x) x$p.value)
+
+
+```
+
+
+### e.
+
+### f.
+
+### g.

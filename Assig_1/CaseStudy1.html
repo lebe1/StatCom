@@ -1585,11 +1585,11 @@ microbenchmark(
   fib_ratio_while(2000)
 )</code></pre>
 <pre><code>## Unit: microseconds
-##                   expr     min       lq      mean  median      uq       max
-##     fib_ratio_for(200)  61.197  62.9040  65.20995  64.922  66.701    74.425
-##   fib_ratio_while(200)  84.968  88.8810 569.11339  90.905  92.547 47816.049
-##    fib_ratio_for(2000) 569.731 584.5495 757.49067 588.052 607.498 16517.178
-##  fib_ratio_while(2000) 835.937 844.7060 862.92321 855.007 874.099   995.420
+##                   expr     min       lq       mean  median       uq       max
+##     fib_ratio_for(200)  58.968  62.7765  519.43668  64.361  68.2150 45382.594
+##   fib_ratio_while(200)  83.869  87.8485   91.18524  89.469  93.9055   114.558
+##    fib_ratio_for(2000) 567.293 574.8540  591.55799 587.303 603.2605   655.641
+##  fib_ratio_while(2000) 819.452 841.7995 1023.99650 852.318 875.2830 16397.408
 ##  neval
 ##    100
 ##    100
@@ -1826,10 +1826,12 @@ if (n &lt; 2L)
   stop(&quot;not enough observations&quot;)
 r &lt;- rank(x)
 TIES &lt;- table(x)
+
 STATISTIC &lt;- sum(tapply(r, g, sum)^2/tapply(r, g, length))
 STATISTIC &lt;- ((12 * STATISTIC/(n * (n + 1)) - 3 * (n + 1))/(1 -
-  sum(TIESˆ3 - TIES)/(nˆ3 - n)))
+  sum(TIES^3 - TIES)/(n^3 - n)))
 PARAMETER &lt;- k - 1L
+
 PVAL &lt;- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
 names(STATISTIC) &lt;- &quot;Kruskal-Wallis chi-squared&quot;
 names(PARAMETER) &lt;- &quot;df&quot;
@@ -1842,67 +1844,154 @@ return(RVAL)
 <div id="a.-pseudo-code" class="section level3">
 <h3><strong>a. Pseudo code</strong></h3>
 <p>This is a test</p>
-<pre class="r"><code>kwtest2 &lt;- function (x, g, ...)
+<pre class="r"><code>kwtest_pseudo &lt;- function (x, g, ...)
 {
-  if (is.list(x)) {
-    if (length(x) &lt; 2L)
-      stop(&quot;&#39;x&#39; must be a list with at least 2 elements&quot;)
-    if (!missing(g))
-      warning(&quot;&#39;x&#39; is a list, so ignoring argument &#39;g&#39;&quot;)
-    if (!all(sapply(x, is.numeric)))
-      warning(&quot;some elements of &#39;x&#39; are not numeric and will be coerced to numeric&quot;)
+  if x is a list {
+    if x has less than 2 elements
+      Do not continue with the code and inform the user
+    if g is provided
+      Give a warning to the user that g will be ignored
+    if all the elemensts of x are not numeric
+      Warns the users that some elements are not numeric and will be converted 
+      to numeric
     k &lt;- length(x)
     l &lt;- lengths(x)
-    if (any(l == 0L))
-      stop(&quot;all groups must contain data&quot;)
+    if any element of x is 0
+      Stop and inform that all the groups should contain data
     g &lt;- factor(rep.int(seq_len(k), l))
     x &lt;- unlist(x)
-}
-else {
-  if (length(x) != length(g))
-    stop(&quot;&#39;x&#39; and &#39;g&#39; must have the same length&quot;)
-  g &lt;- factor(g)
-  k &lt;- nlevels(g)
-  if (k &lt; 2L)
-    stop(&quot;all observations are in the same group&quot;)
-}
+  }
+  if x is not a list {
+    if the length of x and g are different
+      Stops and inform the user x and g should be the same length
+    g &lt;- factor(g)
+    k &lt;- nlevels(g)
+    if there are less than 2 groups in g
+      Stop and inform the user
+  }
+  n &lt;- length(x)
+  if x length is less than 2
+    Stop and inform about the lack of observations
+  r &lt;- rank(x)
+  TIES &lt;- table(x)
+  STATISTIC &lt;- Calculate the Kruskal-Wallis statistic
+  PARAMETER &lt;- degree of freedom
+  PVAL &lt;- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
+  names(STATISTIC) &lt;- &quot;Kruskal-Wallis chi-squared&quot;
+  names(PARAMETER) &lt;- &quot;df&quot;
+  RVAL &lt;- list(statistic = STATISTIC, parameter = PARAMETER,
+  p.value = PVAL, method = &quot;Kruskal-Wallis rank sum test&quot;)
+  return(RVAL)
   
 }</code></pre>
 </div>
-<div id="b.-3" class="section level3">
-<h3>b.</h3>
+<div id="b.-example-call" class="section level3">
+<h3><strong>b. Example call</strong></h3>
+<pre class="r"><code># Example with list
+
+x_list &lt;- list(
+  group1 = c(1, 3, 4, 2),
+  group2 = c(2, 6, 1, 7)
+)
+
+# Example with vector
+
+x_vector &lt;- c(1, 3, 4, 2, 2, 6, 1, 7)
+g_vector &lt;- c(1, 1, 1, 1, 2, 2, 2, 2) # group labels
+
+result_list &lt;- kwtest(x_list)
+result_vector &lt;- kwtest(x_vector, g_vector)
+
+print(&quot;Result using x as list:&quot;)
+print(result_list)
+
+print(&quot;Result using x as vector:&quot;)
+print(result_vector)</code></pre>
+<pre><code>## [1] &quot;Result using x as list:&quot;
+## $statistic
+## Kruskal-Wallis chi-squared 
+##                  0.3414634 
+## 
+## $parameter
+## df 
+##  1 
+## 
+## $p.value
+## [1] 0.5589857
+## 
+## $method
+## [1] &quot;Kruskal-Wallis rank sum test&quot;
+## 
+## [1] &quot;Result using x as vector:&quot;
+## $statistic
+## Kruskal-Wallis chi-squared 
+##                  0.3414634 
+## 
+## $parameter
+## df 
+##  1 
+## 
+## $p.value
+## [1] 0.5589857
+## 
+## $method
+## [1] &quot;Kruskal-Wallis rank sum test&quot;</code></pre>
 </div>
+<div id="c.-kwtest-faster" class="section level3">
+<h3><strong>c. kwtest faster</strong></h3>
+<pre class="r"><code>kwtest_fast &lt;- function(x, g, ...) {
+  if (!is.numeic(x) | !is.numeric(g)) {
+    stop(&quot;x and g must be numeric vectors&quot;)
+  }
+  
+  if (length(x) != length(g)) {
+    stop(&quot;x and g must have the same length&quot;)
+  }
+  
+  N &lt;- length(x)
+  number_groups &lt;- nlevels(factor(g))
+  obs_group &lt;- table(g)
+  r &lt;- rank(x)
+  r_group_avg &lt;- tapply(r, g, sum)/obs_group
+  r_avg &lt;- (N + 1)/2
+  
+  H_num &lt;-(N - 1) * sum(obs_group * (r_group_avg - r_avg)**2)
+  H_dem &lt;- sum((r - r_avg)**2)
+  
+  H &lt;- H_num/H_dem
+  
+}</code></pre>
 </div>
-<div id="a.-3" class="section level2">
-<h2>a.</h2>
+<div id="d.-multiple-experiments" class="section level3">
+<h3>d. Multiple experiments</h3>
+<pre class="r"><code>set.seed(1234)
+m &lt;- 1000 # number of repetitions
+n &lt;- 50
+# number of individuals
+X &lt;- matrix(rt(m * n, df = 10), nrow = m)
+grp &lt;- rep(1:3, c(20, 20, 10))
+
+
+kwtest_matrix &lt;- function(X, grp) {
+  res &lt;- apply(X, 1, function(x) kwtest(x, grp))
+}
+
+# Returns all the statistics from res
+
+res &lt;- kwtest_matrix(X, grp)
+
+# Extract the p-values
+
+p_values &lt;- sapply(res, function(x) x$p.value)</code></pre>
 </div>
-<div id="b.-4" class="section level2">
-<h2>b.</h2>
+<div id="e." class="section level3">
+<h3>e.</h3>
 </div>
-<div id="c.-3" class="section level2">
-<h2>c.</h2>
+<div id="f." class="section level3">
+<h3>f.</h3>
 </div>
-<div id="d.-1" class="section level2">
-<h2>d.</h2>
-</div>
-<div id="e." class="section level2">
-<h2>e.</h2>
-</div>
-<div id="f." class="section level2">
-<h2>f.</h2>
-</div>
-<div id="g." class="section level2">
-<h2>g.</h2>
-</div>
-<div id="quarterly-results" class="section level2 tabset">
-<h2 class="tabset">Quarterly Results</h2>
-<div id="by-product" class="section level3">
-<h3>By Product</h3>
-<p>(tab content)</p>
-</div>
-<div id="by-region" class="section level3">
-<h3>By Region</h3>
-<p>(tab content)</p>
+<div id="g." class="section level3">
+<h3>g.</h3>
 </div>
 </div>
 </div>
