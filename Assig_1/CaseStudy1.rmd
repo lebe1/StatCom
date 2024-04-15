@@ -161,22 +161,15 @@ head(sequence)
 # 2. Gamma function
 Write a function to compute the following for n a positive integer using the gamma function in base R.
 ```{r gamma_function}
+# Function to compute rho_n using gamma function
 compute_rho <- function(n) {
-  if (n <= 0) {
-    stop("n must be a positive integer")
+  if (n >= 2) {
+    numerator <- gamma((n - 1)/2)
+    denominator <- gamma(1/2) * gamma((n - 2)/2)
+    return(numerator / denominator)
+  } else {
+    stop("n must be bigger than 2")
   }
-  
-  if (n == 1) {
-    return(0)  # ρ1 is defined as 0
-  }
-  
-  # Compute the logarithmic form of the ratio
-  log_rho <- lgamma((n - 1) / 2) - lgamma(1/2) - lgamma((n - 2) / 2)
-  
-  # Convert the result back to the regular scale
-  rho <- exp(log_rho)
-  
-  return(rho)
 }
 ```
 
@@ -187,76 +180,78 @@ n <- 2000
 rho_2000 <- compute_rho(n)
 print(rho_2000)
 ```
-Explanation: For large values of n, the gamma function overflows due to its computational limitations.
+Explanation: We receive a NaN i.e. a null value. This happens because the gamma function grows very rapidly for large positive values of its argument. When the numerator becomes infinite, and the denominator is finite, the result becomes NaN.
 
 ### c. Implementation for large values of n
 Write an implementation which can also deal with large values of n > 1000.
 
 ```{r 2c_large_values_n}
-# Function to compute rho_n using gamma function
-compute_rho <- function(n) {
-  if (n %% 2 != 0) {
-    numerator <- gamma((n - 1)/2)
-    denominator <- gamma(1/2) * gamma((n - 2)/2)
-    return(numerator / denominator)
-  } else {
-    stop("n must be an odd positive integer.")
-  }
-}
-
 # Function to compute rho_n for large values of n
 compute_large_rho <- function(n) {
-  if (n %% 2 != 0) {
+  if (n >= 2) {
     # Handling large values of n using log-gamma
     numerator <- lgamma((n - 1)/2)
     denominator <- lgamma(1/2) + lgamma((n - 2)/2)
     return(exp(numerator - denominator))
   } else {
-    stop("n must be an odd positive integer.")
+    stop("n must be bigger than 2")
   }
 }
 
 # Testing the functions
 n <- 1001
-print(compute_rho(n))
-print(compute_large_rho(n))
+print(paste("Ouput of normal function ",compute_rho(n)))
+print(paste("Ouput of optimized function for large N ",compute_large_rho(n)))
 ```
 
 # 3. The golden ratio
 Write an R function which computes Φn+1 using the recursion above (go up to n = 1000) .
 
-```{r 3_golden_ratio}
+```{r 3a_golden_ratio}
 # a. Computing Φn+1 using recursion
 phi_recursive <- function(n) {
+  
+  if(n < 0) {
+    stop("No negative numbers")
+  }
+
+  
   if (n == 0) {
-    return(sqrt(5) + 1)/2
+    return((sqrt(5) + 1)/2)
   } else if (n == 1) {
-    return(sqrt(5) + 3)/2
+    return((sqrt(5) + 3)/2)
   } else {
     return(phi_recursive(n - 1) + phi_recursive(n - 2))
   }
 }
 
+phi_recursive(25)
+```
 
+```{r 3b_golden_ratio}
 # b. Computing Φn+1 using power operator
 phi_power <- function(n) {
   phi <- (sqrt(5) + 1)/2
   return(phi^(n + 1))
 }
+phi_power(25)
+```
 
+
+```{r 3c_golden_ratio}
 # c. Comparing results
 n_values <- c(12, 60, 120, 300)
 
 for (n in n_values) {
   result_a <- phi_recursive(n)
   result_b <- phi_power(n)
-  
+
   # Using == operator
   comparison1 <- result_a == result_b
-  
+
   # Using all.equal function
   comparison2 <- all.equal(result_a, result_b)
-  
+
   cat("For n =", n, "\n")
   cat("Using == operator:", comparison1, "\n")
   cat("Using all.equal function:", comparison2, "\n\n")
@@ -543,11 +538,8 @@ kwtest_fast <- function(x, g, ...) {
   if (!is.numeric(x) | !is.numeric(g)) {
     stop("x and g must be numeric vectors")
   }
-  print(x)
-  
+
   if (length(x) != length(g)) {
-    print(length(x))
-    print(length(g))
     stop("x and g must have the same length")
   }
   
@@ -555,8 +547,6 @@ kwtest_fast <- function(x, g, ...) {
   N <- length(x)
   
   if (number_groups < 2L){
-    print(number_groups)
-    print(g)
     stop("nlevels(g) < 2 shows all observations are in the same group")
   }
     
@@ -580,6 +570,7 @@ kwtest_fast <- function(x, g, ...) {
   
 }
 
+kwtest_fast(x_vector, g_vector)
 ```
 
 ### **d. Multiple experiments using apply function**
@@ -595,7 +586,7 @@ grp <- rep(1:3, c(20, 20, 10))
 
 
 kwtest_mult <- function(X, grp) {
-  res <- apply(X, 1, function(x) kwtest(x, grp))
+  res <- apply(X, 1, function(x) kwtest_fast(x, grp))
 }
 
 # Returns all the statistics from res
@@ -604,7 +595,7 @@ res <- kwtest_mult(X, grp)
 
 # Extract the p-values
 
-p_values <- sapply(res, function(x) x$p.value)
+p_values <- sapply(res, function(x) x)
 
 
 ```
@@ -651,14 +642,14 @@ X <- matrix(rt(m * n, df = 10), nrow = m)
 grp <- rep(1:3, c(20, 20, 10))
 
 # Benchmark the two functions
-# benchmarks <- microbenchmark(
-#   apply_approach = kwtest_mult(X, grp),
-#   loop_approach = kwtest_matrix2(X, grp),
-#   times = 10
-# )
-# 
-# # Print the benchmarks
-# print(benchmarks)
+benchmarks <- microbenchmark(
+  apply_approach = kwtest_mult(X, grp),
+  loop_approach = kwtest_matrix2(X, grp),
+  times = 10
+)
+
+# Print the benchmarks
+print(benchmarks)
 
 ```
 
@@ -689,15 +680,15 @@ kwtest_vectorize <- function(X, grp) {
 }
 
 # Benchmark the two functions
-# benchmarks <- microbenchmark(
-#   apply_approach = kwtest_mult(X, grp),
-#   loop_approach = kwtest_matrix2(X, grp),
-#   vectorize_approach = kwtest_vectorize(X, grp), 
-#   times = 10
-# )
-# 
-# # Print the benchmarks
-# print(benchmarks)
+benchmarks <- microbenchmark(
+  apply_approach = kwtest_mult(X, grp),
+  loop_approach = kwtest_matrix2(X, grp),
+  vectorize_approach = kwtest_vectorize(X, grp),
+  times = 10
+)
+
+# Print the benchmarks
+print(benchmarks)
 
 ```
 Since the Vectorize() uses mapply() under the hood, we can use this function right away to compare the results with the other two approaches. As shown, the loop approach is still the best.
