@@ -156,21 +156,98 @@ tail(sequence)
 
 # 2. Gamma function
 
-## a.
+compute_rho <- function(n) {
+  if (n <= 0) {
+    stop("n must be a positive integer")
+  }
+  
+  if (n == 1) {
+    return(0)  # ρ1 is defined as 0
+  }
+  
+  # Compute the logarithmic form of the ratio
+  log_rho <- lgamma((n - 1) / 2) - lgamma(1/2) - lgamma((n - 2) / 2)
+  
+  # Convert the result back to the regular scale
+  rho <- exp(log_rho)
+  
+  return(rho)
+}
 
-## b.
 
-## c.
+# b. Observing behavior for n = 2000
+n <- 2000
+rho_2000 <- compute_rho(n)
+print(rho_2000)
+# Explanation: For large values of n, the gamma function overflows due to its computational limitations.
 
-## d.
+# c. Implementation for large values of n
+# Function to compute rho_n using gamma function
+compute_rho <- function(n) {
+  if (n %% 2 != 0) {
+    numerator <- gamma((n - 1)/2)
+    denominator <- gamma(1/2) * gamma((n - 2)/2)
+    return(numerator / denominator)
+  } else {
+    stop("n must be an odd positive integer.")
+  }
+}
 
-# 3. The golden ration
+# Function to compute rho_n for large values of n
+compute_large_rho <- function(n) {
+  if (n %% 2 != 0) {
+    # Handling large values of n using log-gamma
+    numerator <- lgamma((n - 1)/2)
+    denominator <- lgamma(1/2) + lgamma((n - 2)/2)
+    return(exp(numerator - denominator))
+  } else {
+    stop("n must be an odd positive integer.")
+  }
+}
 
-## a.
+# Testing the functions
+n <- 1001
+print(compute_rho(n))
+print(compute_large_rho(n))
 
-## b.
 
-## c.
+# 3. The golden ratio
+
+# a. Computing Φn+1 using recursion
+phi_recursive <- function(n) {
+  if (n == 0) {
+    return(sqrt(5) + 1)/2
+  } else if (n == 1) {
+    return(sqrt(5) + 3)/2
+  } else {
+    return(phi_recursive(n - 1) + phi_recursive(n - 2))
+  }
+}
+
+
+# b. Computing Φn+1 using power operator
+phi_power <- function(n) {
+  phi <- (sqrt(5) + 1)/2
+  return(phi^(n + 1))
+}
+
+# c. Comparing results
+n_values <- c(12, 60, 120, 300)
+
+for (n in n_values) {
+  result_a <- phi_recursive(n)
+  result_b <- phi_power(n)
+  
+  # Using == operator
+  comparison1 <- result_a == result_b
+  
+  # Using all.equal function
+  comparison2 <- all.equal(result_a, result_b)
+  
+  cat("For n =", n, "\n")
+  cat("Using == operator:", comparison1, "\n")
+  cat("Using all.equal function:", comparison2, "\n\n")
+}
 
 # 4. Game of craps
 
@@ -452,6 +529,7 @@ kwtest_fast <- function(x, g, ...) {
   if (!is.numeric(x) | !is.numeric(g)) {
     stop("x and g must be numeric vectors")
   }
+  print(x)
   
   if (length(x) != length(g)) {
     print(length(x))
@@ -472,7 +550,7 @@ kwtest_fast <- function(x, g, ...) {
     stop("length(x) has not enough observations")
   
   number_groups <- nlevels(factor(g))
-  obs_group <- table(g)
+  obs_group <- length(unique(g))
   r <- rank(x)
   r_group_avg <- tapply(r, g, sum)/obs_group
   r_avg <- (N + 1)/2
@@ -482,11 +560,19 @@ kwtest_fast <- function(x, g, ...) {
   
   H <- H_num/H_dem
   
+  pval <- pchisq(H, obs_group - 1, lower.tail = FALSE)
+  
+  return(pval)
+  
 }
 
 ```
 
+<<<<<<< HEAD
 ### **d. Multiple experiments using apply function**
+=======
+### **d. Multiple experiments**
+>>>>>>> 9423302f9a084b614d1780d44ec3de00bd7fb43a
 
 ```{r}
 set.seed(1234)
@@ -497,13 +583,13 @@ X <- matrix(rt(m * n, df = 10), nrow = m)
 grp <- rep(1:3, c(20, 20, 10))
 
 
-kwtest_matrix <- function(X, grp) {
+kwtest_mult <- function(X, grp) {
   res <- apply(X, 1, function(x) kwtest(x, grp))
 }
 
 # Returns all the statistics from res
 
-res <- kwtest_matrix(X, grp)
+res <- kwtest_mult(X, grp)
 
 # Extract the p-values
 
@@ -539,6 +625,21 @@ kwtest_matrix2 <- function(X, g) {
   
 }
 
+<<<<<<< HEAD
+=======
+```{r}
+kwtest_mult_fast <- function(X, grp) {
+  res <- apply(X, 1, function(x) kwtest_fast(x, grp))
+  
+  return(res)
+}
+
+kwtest_mult_fast(X, grp)
+```
+
+
+### f.
+>>>>>>> 9423302f9a084b614d1780d44ec3de00bd7fb43a
 
 ```
 ### **f. Benchmarking**
