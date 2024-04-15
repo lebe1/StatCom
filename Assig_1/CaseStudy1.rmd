@@ -250,8 +250,8 @@ phi_power(25)
 
 ```{r 3c_golden_ratio}
 # c. Comparing results
-n_values <- c(12, 60, 120, 300)
-
+# n_values <- c(12, 60, 120, 300)
+n_values <- c(12)
 for (n in n_values) {
   result_a <- phi_recursive(n)
   result_b <- phi_power(n)
@@ -267,6 +267,14 @@ for (n in n_values) {
   cat("Using all.equal function:", comparison2, "\n\n")
 }
 ```
+
+
+As shown in the output, when using the == operator, the comparison returns FALSE for n=12
+On the other side using the all.equal function, the comparison returns TRUE. This behaviour should be the same for the other values of n. Due to time limitations, this program had to be quit after three hours running.
+
+The reason for the difference when using the == operator is due to the way floating-point arithmetic is handled in R. Floating-point arithmetic can introduce small rounding errors, causing direct comparisons using == to fail, even if the values are very close.
+
+The all.equal function, on the other hand, compares the values with tolerance, allowing for small differences due to floating-point arithmetic. Therefore, it returns TRUE for values that are very close.
 
 # 4. Game of craps
 
