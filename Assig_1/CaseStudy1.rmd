@@ -204,6 +204,16 @@ print(paste("Ouput of normal function ",compute_rho(n)))
 print(paste("Ouput of optimized function for large N ",compute_large_rho(n)))
 ```
 
+### d. Plotting ρn/√n for different values of n
+
+```{r 2_d_plot}
+n_values <- seq(3, 1000, by = 10)
+rho_values <- sapply(n_values, function(n) compute_large_rho(n) / sqrt(n))
+plot(n_values, rho_values, type = 'l', xlab = 'n', ylab = 'ρn/√n', main = 'ρn/√n vs n')
+```
+
+
+
 # 3. The golden ratio
 Write an R function which computes Φn+1 using the recursion above (go up to n = 1000) .
 
