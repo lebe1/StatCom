@@ -1586,10 +1586,10 @@ microbenchmark(
 )</code></pre>
 <pre><code>## Unit: microseconds
 ##                   expr     min       lq      mean   median       uq       max
-##     fib_ratio_for(200)  13.027  14.1235  15.53490  14.6905  15.8890    33.195
-##   fib_ratio_while(200)  17.379  18.6150  20.35446  19.3140  20.4805    45.976
-##    fib_ratio_for(2000) 123.272 126.9520 269.26057 129.8945 133.9345 13970.791
-##  fib_ratio_while(2000) 166.496 170.4170 240.56928 173.5550 178.2050  6633.052
+##     fib_ratio_for(200)  12.785  14.0490  15.48292  14.5515  15.8200    38.744
+##   fib_ratio_while(200)  17.541  18.7530  20.80139  19.7770  20.9985    38.675
+##    fib_ratio_for(2000) 121.222 124.3030 287.00179 126.7025 136.7810 15395.603
+##  fib_ratio_while(2000) 166.239 169.8655 249.39254 172.2825 184.5720  6811.992
 ##  neval
 ##    100
 ##    100
@@ -1789,7 +1789,7 @@ game_of_craps &lt;- function(){
 
 # Execute function i.e. one simulation of the game
 game_of_craps()</code></pre>
-<pre><code>## [1] &quot;Yeah, you won rolling the same &#39;point number&#39; again!&quot;</code></pre>
+<pre><code>## [1] &quot;Sorry, you lost after three more attempts!&quot;</code></pre>
 <hr />
 </div>
 <div id="readable-and-efficient-code" class="section level1">
@@ -1942,7 +1942,6 @@ return(RVAL)
 <h2 class="tabset">Solution</h2>
 <div id="a.-pseudo-code" class="section level3">
 <h3><strong>a. Pseudo code</strong></h3>
-<p>This is a test</p>
 <pre class="r"><code>kwtest_pseudo &lt;- function (x, g, ...)
 {
   if x is a list {
@@ -2145,8 +2144,14 @@ benchmarks &lt;- microbenchmark(
 
 # Print the benchmarks
 print(benchmarks)</code></pre>
-<p>As shown from the statistics, the loop approach is faster than the
-apply approach.</p>
+<pre><code>## Unit: milliseconds
+##            expr      min       lq     mean   median       uq      max neval
+##  apply_approach 72.49299 73.77762 75.15048 75.37493 76.32704 77.34967    10
+##   loop_approach 71.90807 72.49144 73.99361 73.43288 74.65271 77.67587    10</code></pre>
+<p>As shown from the statistics, the loop approach is a little bit
+faster than the apply approach, which is against the expectations since
+the apply function is supposed to be more efficient than the for loop
+approach.</p>
 </div>
 <div id="g.-vectorizing" class="section level3">
 <h3><strong>g. Vectorizing</strong></h3>
@@ -2182,9 +2187,21 @@ benchmarks &lt;- microbenchmark(
 
 # Print the benchmarks
 print(benchmarks)</code></pre>
+<pre><code>## Unit: milliseconds
+##                expr       min        lq      mean    median        uq       max
+##      apply_approach  70.57850  75.49098  77.73288  77.59207  81.79903  82.53393
+##       loop_approach  74.95091  75.49853  78.86293  77.83301  80.56589  87.96389
+##  vectorize_approach 177.61969 183.93899 190.14456 188.01529 192.84367 217.19504
+##  neval
+##     10
+##     10
+##     10</code></pre>
 <p>Since the Vectorize() uses mapply() under the hood, we can use this
 function right away to compare the results with the other two
-approaches. As shown, the loop approach is still the best.</p>
+approaches. As shown, the loop approach is still the best. Here, the
+expectations are also not met since the vectorization approach is by the
+slowest. Since the approach is not implemented quite as correctly as it
+is supposed, this might be the reason for it.</p>
 </div>
 </div>
 </div>

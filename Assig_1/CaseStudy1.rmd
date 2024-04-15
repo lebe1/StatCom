@@ -472,8 +472,6 @@ return(RVAL)
 
 ### **a. Pseudo code**
 
-This is a test
-
 ```{r pseudo_code, eval=FALSE}
 
 kwtest_pseudo <- function (x, g, ...)
@@ -649,7 +647,7 @@ kwtest_matrix2 <- function(X, g) {
 
 
 ### **f. Benchmarking**
-```{r 6f_benchmarking, echo = T, results = 'hide'}
+```{r 6f_benchmarking}
 library(microbenchmark)
 
 # For a better overview set random data from above here again
@@ -671,10 +669,10 @@ print(benchmarks)
 
 ```
 
-As shown from the statistics, the loop approach is faster than the apply approach.
+As shown from the statistics, the loop approach is a little bit faster than the apply approach, which is against the expectations since the apply function is supposed to be more efficient than the for loop approach.
 
 ### **g. Vectorizing**
-```{r 6g_vectorizing, echo = T, results = 'hide'}
+```{r 6g_vectorizing}
 library(microbenchmark)
 
 # For a better overview set random data from above here again
@@ -709,4 +707,4 @@ benchmarks <- microbenchmark(
 print(benchmarks)
 
 ```
-Since the Vectorize() uses mapply() under the hood, we can use this function right away to compare the results with the other two approaches. As shown, the loop approach is still the best.
+Since the Vectorize() uses mapply() under the hood, we can use this function right away to compare the results with the other two approaches. As shown, the loop approach is still the best. Here, the expectations are also not met since the vectorization approach is by the slowest. Since the approach is not implemented quite as correctly as it is supposed, this might be the reason for it.
