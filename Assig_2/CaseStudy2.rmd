@@ -1,242 +1,150 @@
 ---
-title: "Case Study 2" subtitle: "Group 97 - Data manipulation" author:
+title: "Case Study 2" 
+subtitle: "Group 97 - Data manipulation" 
+author:
   - Beccard\, Leon - 12133103
   - Farmohammadi\, Pouya - 52116495
   - Monteiro Oliveira\, Guilherme - 12243299
-date: "`r Sys.Date()`" output: html_document: toc: True toc_float: collapsed:
-true smooth_scroll: true toc_depth: 1 theme: readable # number_sections: True
-editor_options: markdown: wrap: 80
+date: "`r Sys.Date()`" 
+output: 
+  html_document: 
+    toc: TRUE
+    toc_float: 
+      collapsed: TRUE 
+      smooth_scroll: TRUE 
+    toc_depth: 2 
+    theme: readable 
+    #number_sections: True
+editor_options: 
+  markdown: 
+    wrap: 80
 ---
+
 --------------------------------------------------------------------------------
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+
 ```
---------------------------------------------------------------------------------
-# 6. Measuring and improving performance
-Have a look at the code of the function below. It is a function for performing a
-Kruskal Wallis test, a robust non-parametric method for testing whether samples
-come from the same distribution. (Note: we assume no missing values are present
-in x).
-```{r Kruskal_Wallis_test}
-kwtest <- function (x, g, ...)
-{
-  if (is.list(x)) {
-    if (length(x) < 2L)
-      stop("'x' must be a list with at least 2 elements")
-    if (!missing(g))
-      warning("'x' is a list, so ignoring argument 'g'")
-    if (!all(sapply(x, is.numeric)))
-      warning("some elements of 'x' are not numeric and will be coerced to numeric")
-    k <- length(x)
-    l <- lengths(x)
-    if (any(l == 0L))
-      stop("all groups must contain data")
-    g <- factor(rep.int(seq_len(k), l))
-    x <- unlist(x)
-}
-else {
-  if (length(x) != length(g))
-    stop("'x' and 'g' must have the same length")
-  g <- factor(g)
-  k <- nlevels(g)
-  if (k < 2L)
-    stop("all observations are in the same group")
-}
-n <- length(x)
-if (n < 2L)
-  stop("not enough observations")
-r <- rank(x)
-TIES <- table(x)
-STATISTIC <- sum(tapply(r, g, sum)^2/tapply(r, g, length))
-STATISTIC <- ((12 * STATISTIC/(n * (n + 1)) - 3 * (n + 1))/(1 -
-  sum(TIES^3 - TIES)/(n^3 - n)))
-PARAMETER <- k - 1L
-PVAL <- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
-names(STATISTIC) <- "Kruskal-Wallis chi-squared"
-names(PARAMETER) <- "df"
-RVAL <- list(statistic = STATISTIC, parameter = PARAMETER,
-  p.value = PVAL, method = "Kruskal-Wallis rank sum test")
-return(RVAL)
-}
+
+# Task
+
+## Task a
+
+We are loading the data that was available in TUWEL and we should keep the
+contry names and the variables.
+
+```{r a_Load_Data, }
+
+#Get current directory
+
+df_median <- read_fwf("./rawdata_343.txt", 
+                      skip = 2, 
+                      fwf_widths(c(8, 66, 12, NA), 
+                                 c("Id", "Country", "Median age", "Note"))) %>% 
+  select(Country, `Median age`)
+  
+
+df_net <- read_fwf("./rawdata_347.txt", 
+                   skip = 2, 
+                   fwf_widths(c(8, 64, 6, NA), 
+                              c("Id", "Country", "Net migration rate", "Note"))) %>%
+  select(Country, `Net migration rate`)
+
+df_uempl <- read_csv("./rawdata_373.csv") %>% 
+  rename("Country" = country_name, 
+         "youth unemployed rate" = youth_unempl_rate)
+
 ```
-## Solution {.tabset}
-### **a. Pseudo code**
-This is a test
-```{r pseudo_code, eval=FALSE}
-kwtest_pseudo <- function (x, g, ...)
-{
-  if x is a list {
-    if x has less than 2 elements
-      Do not continue with the code and inform the user
-    if g is provided
-      Give a warning to the user that g will be ignored
-    if all the elemensts of x are not numeric
-      Warns the users that some elements are not numeric and will be converted
-      to numeric
-    k <- length(x)
-    l <- lengths(x)
-    if any element of x is 0
-      Stop and inform that all the groups should contain data
-    g <- factor(rep.int(seq_len(k), l))
-    x <- unlist(x)
-  }
-  if x is not a list {
-    if the length of x and g are different
-      Stops and inform the user x and g should be the same length
-    g <- factor(g)
-    k <- nlevels(g)
-    if there are less than 2 groups in g
-      Stop and inform the user
-  }
-  n <- length(x)
-  if x length is less than 2
-    Stop and inform about the lack of observations
-  r <- rank(x)
-  TIES <- table(x)
-  STATISTIC <- Calculate the Kruskal-Wallis statistic
-  PARAMETER <- degree of freedom
-  PVAL <- pchisq(STATISTIC, PARAMETER, lower.tail = FALSE)
-  names(STATISTIC) <- "Kruskal-Wallis chi-squared"
-  names(PARAMETER) <- "df"
-  RVAL <- list(statistic = STATISTIC, parameter = PARAMETER,
-  p.value = PVAL, method = "Kruskal-Wallis rank sum test")
-  return(RVAL)
-}
+
+## Task b
+
+The following code is merging the datasets using the key *Country*.
+
+```{r merge}
+
+df <- df_median %>% 
+  full_join(df_net, by = "Country") %>% 
+  full_join(df_uempl, by = "Country")
+
+
 ```
-### **b. Example call**
-```{r example_call, results="hold"}
-# Example with list
-x_list <- list(
-  group1 = c(1, 3, 4, 2),
-  group2 = c(2, 6, 1, 7)
-)
-# Example with vector
-x_vector <- c(1, 3, 4, 2, 2, 6, 1, 7)
-g_vector <- c(1, 1, 1, 1, 2, 2, 2, 2) # group labels
-result_list <- kwtest(x_list)
-result_vector <- kwtest(x_vector, g_vector)
-print("Result using x as list:")
-print(result_list)
-print("Result using x as vector:")
-print(result_vector)
+
+## Task c
+
+Acquiring data from the link
+<https://datahelpdesk.worldbank.org/knowledgebase/articles/906519>
+
+```{r acquire_data}
+
+url <- "https://datacatalogfiles.worldbank.org/ddh-published/0037712/DR0090755/CLASS.xlsx"
+destfile <- "CLASS.xlsx"
+
+download.file(url, destfile)
+
+df_country_group <- read_xlsx('./CLASS.xlsx', sheet = 1)
+
+
 ```
-### **c. kwtest faster**
-```{r kwtest_faster, results='hold'}
-kwtest_fast <- function(x, g, ...) {
-  if (!is.numeric(x) | !is.numeric(g)) {
-    stop("x and g must be numeric vectors")
-  }
-  if (length(x) != length(g)) {
-    stop("x and g must have the same length")
-  }
-  number_groups <- nlevels(factor(g))
-  N <- length(x)
-  if (number_groups < 2L){
-    stop("nlevels(g) < 2 shows all observations are in the same group")
-  }
-  if (N < 2L)
-    stop("length(x) has not enough observations")
-  number_groups <- nlevels(factor(g))
-  obs_group <- length(unique(g))
-  r <- rank(x)
-  r_group_avg <- tapply(r, g, sum)/obs_group
-  r_avg <- (N + 1)/2
-  H_num <-(N - 1) * sum(obs_group * (r_group_avg - r_avg)**2)
-  H_dem <- sum((r - r_avg)**2)
-  H <- H_num/H_dem
-  pval <- pchisq(H, obs_group - 1, lower.tail = FALSE)
-  return(pval)
-}
-kwtest_fast(x_vector, g_vector)
+
+## Task d
+
+1.  Common variable
+
+```{r}
+
+check1 <- df %>% left_join(df_country_group, by = c("Country" = "Economy"))
+
+check1["Income group"] %>% is.na() %>% sum()
+
 ```
-### **d. Multiple experiments using apply function**
-```{r 6d_multiple_experiments}
-set.seed(1234)
-m <- 1000 # number of repetitions
-n <- 50
-# number of individuals
-X <- matrix(rt(m * n, df = 10), nrow = m)
-grp <- rep(1:3, c(20, 20, 10))
-kwtest_mult <- function(X, grp) {
-  res <- apply(X, 1, function(x) kwtest_fast(x, grp))
-}
-# Returns all the statistics from res
-res <- kwtest_mult(X, grp)
-# Extract the p-values
-p_values <- sapply(res, function(x) x)
+
+Here the common variable is Country and Economy. It is possible to merge them,
+from the 227 countries 41 were not found.
+
+2.  ISO Codes
+
+The data was manually downloaded using the link
+<https://www.cia.gov/the-world-factbook/references/country-data-codes/>
+
+```{r}
+codes <- read_csv("./Country\ Data\ Codes.csv")
+
 ```
-### **e. Multiple experiments using for loop**
-```{r 6e_multiple_experiments_for_loop}
-kwtest_matrix2 <- function(X, g) {
-  if (!is.matrix(X)) {
-    stop("X must be a matrix.")
-  }
-  if (!is.numeric(g)) {
-    stop("g must be a numeric vector")
-  }
-  if (ncol(X) != length(g)) {
-    stop("Number of cols X of matrix have to be as long as length of vector g")
-  }
-  m <- nrow(X)
-  test_statistics <- numeric(m)
-  for (i in 1:m) {
-    # Take data from each row
-    experiment_data <- X[i,]
-    # Calculate Chi-Square value from Kruskal wallis test and store it in vector
-    test_statistics[i] = kwtest_fast(experiment_data, g)
-  }
-  return(test_statistics)
-}
+
+3.  Reliable Merge
+
+```{r}
+
+reliable_merge <- df %>% 
+  left_join(codes, by = c("Country" = "Name")) %>%
+  left_join(df_country_group, by = c("GENC" = "Code"))
+
+reliable_merge %>% select(Country, GENC, "Median age", "Net migration rate", 
+                          "youth unemployed rate", "Income group")
+
+reliable_merge["Income group"] %>% is.na() %>% sum()
+
+
 ```
-### **f. Benchmarking**
-```{r 6f_benchmarking, echo = T, results = 'hide'}
-library(microbenchmark)
-# For a better overview set random data from above here again
-set.seed(1234)
-m <- 1000 # number of repetitions
-n <- 50
-X <- matrix(rt(m * n, df = 10), nrow = m)
-grp <- rep(1:3, c(20, 20, 10))
-# Benchmark the two functions
-benchmarks <- microbenchmark(
-  apply_approach = kwtest_mult(X, grp),
-  loop_approach = kwtest_matrix2(X, grp),
-  times = 10
-)
-# Print the benchmarks
-print(benchmarks)
+
+Using this approach we got 15 missing values. What is corresponding to finding
+more 26 countries.
+
+## Task e
+
+To add the regions to our dataset the data was obtained from
+<https://statisticstimes.com/geography/countries-by-continents.php>.
+
+```{r regions}
+
+regions <- read_csv("./country_region_continent.csv")
+
+df_vars <- reliable_merge %>% 
+  left_join(regions, by = c(GENC = "ISO-alpha3 Code")) %>%
+  select(Country, "Median age", "Net migration rate", "youth unemployed rate", 
+         "Income group", "Region 1", "Continent")
+
 ```
-As shown from the statistics, the loop approach is faster than the apply
-approach.
-### **g. Vectorizing**
-```{r 6g_vectorizing, echo = T, results = 'hide'}
-library(microbenchmark)
-# For a better overview set random data from above here again
-set.seed(1234)
-m <- 1000 # number of repetitions
-n <- 50
-X <- matrix(rt(m * n, df = 10), nrow = m)
-grp <- rep(1:3, c(20, 20, 10))
-kwtest_vectorize <- function(X, grp) {
-  #?Vectorize
-  #print(grp)
-  # vectorized_kwtest <- Vectorize(kwtest_fast, vectorize.args = "X")
-  #print(vectorized_kwtest)
-  # res <- vectorized_kwtest(X, grp)
-  # return(res)
-  res <- mapply(kwtest, split(X, seq(nrow(X))), MoreArgs = list(grp))
-  return(res)
-}
-# Benchmark the two functions
-benchmarks <- microbenchmark(
-  apply_approach = kwtest_mult(X, grp),
-  loop_approach = kwtest_matrix2(X, grp),
-  vectorize_approach = kwtest_vectorize(X, grp),
-  times = 10
-)
-# Print the benchmarks
-print(benchmarks)
-```
-Since the Vectorize() uses mapply() under the hood, we can use this function
-right away to compare the results with the other two approaches. As shown, the
-loop approach is still the best.
