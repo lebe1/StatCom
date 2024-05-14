@@ -130,7 +130,8 @@ reliable_merge["Income group"] %>% is.na() %>% sum()
 
 ```
 
-Using this approach we got only 15 missing values. What is corresponding to finding 26 countries more with this new approach instead of the one before.
+Using this approach we got only 15 missing values. What is corresponding to
+finding 26 countries more with this new approach instead of the one before.
 
 ## Task e
 
@@ -150,28 +151,42 @@ str(df_vars)
 
 ## Task f
 
-Discuss on the tidyness of the data set df_vars.
-What are the observational units, what are the variables? What can be considered fixed vs measured variables? Tidy the data if needed.
+Discuss on the tidyness of the data set df_vars. What are the observational
+units, what are the variables? What can be considered fixed vs measured
+variables? Tidy the data if needed.
 
 #### Observational units and variables
-The observational unit is a country. Each row in the dataset represents one country.
-The variables in the dataset are:  
 
-* Country: The name of the country (character variable).  
-* Median age: The median age of the population in that country (numeric variable).
-* Net migration rate: The net migration rate of the country (numeric variable).
-* youth unemployed rate: The youth unemployment rate in the country (numeric variable).
-* Income group: The income group the country belongs to (character variable).
-* Region 1: The region the country belongs to (character variable).
-* Continent: The continent the country belongs to (character variable).
+The observational unit is a country. Each row in the dataset represents one
+country. The variables in the dataset are:
+
+-   Country: The name of the country (character variable).\
+-   Median age: The median age of the population in that country (numeric
+    variable).
+-   Net migration rate: The net migration rate of the country (numeric
+    variable).
+-   youth unemployed rate: The youth unemployment rate in the country (numeric
+    variable).
+-   Income group: The income group the country belongs to (character variable).
+-   Region 1: The region the country belongs to (character variable).
+-   Continent: The continent the country belongs to (character variable).
 
 #### Fixed vs Measured Variables
-**Fixed variables:** Variables that are constant for a given country, such as Country, Income group, Region 1, and Continent.  
-**Measured variables:** Variables that measure some attribute of the country and can vary over time, such as Median age, Net migration rate, and youth unemployed rate.
+
+**Fixed variables:** Variables that are constant for a given country, such as
+Country, Income group, Region 1, and Continent.\
+**Measured variables:** Variables that measure some attribute of the country and
+can vary over time, such as Median age, Net migration rate, and youth unemployed
+rate.
 
 #### Tidying the data
-**1. Improve and standardize the column names**  
-The column names have no consistency in their names. Some are lowercase, some are uppercase. Also spaces in between is bad practice and underscores are preferred instead. This will be changed by adding underscores instead of spaces and by lowercasing every name. Also "Region 1" is misleading since there is only one region column. So this will be changed to Region. 
+
+**1. Improve and standardize the column names**\
+The column names have no consistency in their names. Some are lowercase, some
+are uppercase. Also spaces in between is bad practice and underscores are
+preferred instead. This will be changed by adding underscores instead of spaces
+and by lowercasing every name. Also "Region 1" is misleading since there is only
+one region column. So this will be changed to Region.
 
 ```{r f1}
 # Rename column 'Region 1' to 'Region'
@@ -185,18 +200,26 @@ names(df_vars) <- gsub(" ", "_", names(df_vars))
 str(df_vars)
 ```
 
-**Step 2 Removing missing values**
-There are severals missing values (NAs) in the variables `income_group` and `youth_unemployed_rate`. Imputing missing values correctly is quite sophisticated and can mislead to results by simply using the median or mean or a specific value. Therefore, we simply remove the rows i.e. countries that have missing values.
+**Step 2 Removing missing values** There are severals missing values (NAs) in
+the variables `income_group` and `youth_unemployed_rate`. Imputing missing
+values correctly is quite sophisticated and can mislead to results by simply
+using the median or mean or a specific value. Therefore, we simply remove the
+rows i.e. countries that have missing values.
+
 ```{r f2}
 df_vars_cleaned <- na.omit(df_vars)
 nrow(df_vars)
 nrow(df_vars_cleaned)
 df_vars <- df_vars_cleaned
 ```
+
 As given, there only 175 countries listed in the dataframe anymore.
 
-**Step 3: Standardizing and factorizing columns**  
-The variables `income_group`, `region` and `continent` can be standardized by lowercasing each variable, removing the whitespaces and converting them to factors since they are categorical variables. 
+**Step 3: Standardizing and factorizing columns**\
+The variables `income_group`, `region` and `continent` can be standardized by
+lowercasing each variable, removing the whitespaces and converting them to
+factors since they are categorical variables.
+
 ```{r f3}
 df_vars$income_group <- tolower(trimws(df_vars$income_group))
 df_vars$region <- tolower(trimws(df_vars$region))
@@ -208,7 +231,9 @@ head(df_vars[c("income_group", "region", "continent")], 10)
 ```
 
 ## Task g
-Make a frequency table for the status variable in the merged data set. Briefly comment on the results.
+
+Make a frequency table for the status variable in the merged data set. Briefly
+comment on the results.
 
 ```{r g1}
 income_group_frequency_table <- table(df_vars$income_group)
@@ -221,10 +246,15 @@ text(x = bp, y = income_group_frequency_table + 1,
      labels = income_group_frequency_table, pos = 3, cex = 0.8, col = "black")
 ```
 
-As shown in the barplot, most countries are represented by the higher income group, mainly 66 and only 19 countries belong to the low income group. 
+As shown in the barplot, most countries are represented by the higher income
+group, mainly 66 and only 19 countries belong to the low income group.
 
 ## Task h
-Note: This [post](https://stackoverflow.com/a/62140681/19932351) helped to understand, why to use `.groups = 'drop'` to avoid the mentioned error in the post.
+
+Note: This [post](https://stackoverflow.com/a/62140681/19932351) helped to
+understand, why to use `.groups = 'drop'` to avoid the mentioned error in the
+post.
+
 ```{r h}
 # Group data by continent and income group
 income_distribution <- df_vars %>%
@@ -247,30 +277,47 @@ income_distribution <- df_vars %>%
 print(income_distribution)
 ```
 
-We can observe that the highest absolute frequency is 32, which are the high income countries in Europe. There are also three single absolute frequencies. More interesting and explaining are the relative frequencies though:
+We can observe that the highest absolute frequency is 32, which are the high
+income countries in Europe. There are also three single absolute frequencies.
+More interesting and explaining are the relative frequencies though:
 
-- **Africa:** Most countries in Africa are in the lower middle income group (48.9%), followed by low income (35.6%), upper middle income (13.3%), and high income (2.22%).
-- **Asia:** In Asia, the majority of countries fall within the lower middle income group (38.1%), with significant representation in high income (33.3%), upper middle income (21.4%), and low income (7.14%).
-- **Europe:** Europe is predominantly high income (78%), with smaller proportions in upper middle income (19.5%) and lower middle income (2.44%).
-- **North America:** North America shows a balance between high income (47.6%) and upper middle income (42.9%), with a smaller percentage of lower middle income countries (9.52%).
-- **Oceania:** In Oceania, high income countries are the most common (40%), followed closely by lower middle income (33.3%) and upper middle income (26.7%).
-- **South America:** South America is largely upper middle income (63.6%), with fewer countries in high income (27.3%) and lower middle income (9.09%).
+-   **Africa:** Most countries in Africa are in the lower middle income group
+    (48.9%), followed by low income (35.6%), upper middle income (13.3%), and
+    high income (2.22%).
+-   **Asia:** In Asia, the majority of countries fall within the lower middle
+    income group (38.1%), with significant representation in high income
+    (33.3%), upper middle income (21.4%), and low income (7.14%).
+-   **Europe:** Europe is predominantly high income (78%), with smaller
+    proportions in upper middle income (19.5%) and lower middle income (2.44%).
+-   **North America:** North America shows a balance between high income (47.6%)
+    and upper middle income (42.9%), with a smaller percentage of lower middle
+    income countries (9.52%).
+-   **Oceania:** In Oceania, high income countries are the most common (40%),
+    followed closely by lower middle income (33.3%) and upper middle income
+    (26.7%).
+-   **South America:** South America is largely upper middle income (63.6%),
+    with fewer countries in high income (27.3%) and lower middle income (9.09%).
 
 ## Task i
-From h. identify the countries which are the only ones in their respective group. Explain in few words the
-output.
 
-As mentioned above, there are only three countries in their respective income group per continent i.e. the absolute frequency is at one. 
+From h. identify the countries which are the only ones in their respective
+group. Explain in few words the output.
 
-1. Africa: There is one country in the high income group.
-2. Europe: There is one country in the lower middle income group.
-3. South America: There is one country in the lower middle income group.
+As mentioned above, there are only three countries in their respective income
+group per continent i.e. the absolute frequency is at one.
 
-This means certain income groups are represented by only a single country, suggesting unique economic circumstances in those specific nations relative to their belonging continents.
+1.  Africa: There is one country in the high income group.
+2.  Europe: There is one country in the lower middle income group.
+3.  South America: There is one country in the lower middle income group.
+
+This means certain income groups are represented by only a single country,
+suggesting unique economic circumstances in those specific nations relative to
+their belonging continents.
 
 ## Task j
-For each continent count the number of sub-regions in the data set. How granular are the subcontinents that
-you employ in the analysis?
+
+For each continent count the number of sub-regions in the data set. How granular
+are the subcontinents that you employ in the analysis?
 
 ```{r j}
 df_vars %>%
@@ -279,11 +326,16 @@ df_vars %>%
   group_by(continent) %>%
   summarise(sub_region_count = n())
 ```
-Besides the continents South and North America, there are 4 to 5 subregions in each continent. This can be concluded to a moderate level of granularity. Expecially South America has a lower level of granularity with only one subregion.
+
+Besides the continents South and North America, there are 4 to 5 subregions in
+each continent. This can be concluded to a moderate level of granularity.
+Expecially South America has a lower level of granularity with only one
+subregion.
 
 ## Task k
-Look at the frequency distribution of income status in the subregions of Nort- and South-Americas. Comment
-on the results.
+
+Look at the frequency distribution of income status in the subregions of Nort-
+and South-Americas. Comment on the results.
 
 ```{r k}
 north_south_america_data <- df_vars[df_vars$region %in% c("north america", "south america"), ]
@@ -292,4 +344,200 @@ income_freq_distribution <- table(north_south_america_data$income_group)
 print(income_freq_distribution)
 ```
 
-The frequency distribution in North and South Americas shows that the regions are mostly composed of upper middle income countries (7). There are also some high income (3) countries and one lower middle income (1) country, but no low-income countries, suggesting a baseline level of economic prosperity across the regions.
+The frequency distribution in North and South Americas shows that the regions
+are mostly composed of upper middle income countries (7). There are also some
+high income (3) countries and one lower middle income (1) country, but no
+low-income countries, suggesting a baseline level of economic prosperity across
+the regions.
+
+## Task l:
+
+'''{r l} \# Low-middle income countries in the Americas
+low_middle_income_americas \<-
+df_vars[df_vars$region %in% c("north america", "south america") & df_vars$income_group
+== "lower middle income", ] low_middle_income_americas\$country 
+''' 
+The low-middle income countries in the Americas are not primarily small island
+states in the Caribbean. Instead, they include countries like Bolivia, Guyana,
+and Paraguay, among others. These countries are not primarily small island
+states in the Caribbean; Bolivia is a landlocked country in South America. To
+delve into lower-middle income countries across the Americas, we filter the
+dataset to include only such countries in North and South America. Then, we
+examine this list to identify any significant presence of small island states in
+the Caribbean. Executing this script provides a list of lower-middle income
+countries in the Americas. To determine if these countries are predominantly
+small island states in the Caribbean, we compare the list with a map or
+geographical data, focusing on their geographic distribution. If most countries
+are indeed small island states in the Caribbean, it suggests a concentration of
+lower-middle income countries in that region. However, the analysis may reveal
+other patterns across the Americas.
+
+## Task m:
+
+'''{r m} \# Table of average values for median age, youth unemployment rate, and
+net migration rate separated by income status avg_values \<- df_vars %\>%
+group_by(income_group) %\>% summarise( avg_median_age = mean(`median_age`, na.rm
+= TRUE), avg_youth_unemployment_rate = mean(`youth_unemployed_rate`, na.rm =
+TRUE), avg_net_migration_rate = mean(`net_migration_rate`, na.rm = TRUE) )
+
+# Define proper ordering of income classes
+
+income_order \<- c("L", "LM", "UM", "H")
+
+# Reorder income_group as factor with proper order
+
+avg_values$income_group <- factor(avg_values$income_group, levels =
+income_order)
+
+# Print the table
+
+print(avg_values) 
+''' 
+The table of average values for median age, youth
+unemployment rate, and net migration rate separated by income status shows that
+as income status increases, the median age tends to increase, while both youth
+unemployment rate and net migration rate tend to decrease. For example: Low
+income countries have an average median age of 23.49 years, an average youth
+unemployment rate of 26.49%, and an average net migration rate of -0.378. High
+income countries have an average median age of 41.68 years, an average youth
+unemployment rate of 13.16%, and an average net migration rate of 1.07. To
+create a concise summary table of median age, youth unemployment rate, and net
+migration rate based on income status, we'll utilize the dplyr package in R. By
+grouping the data by income status, we'll calculate the mean values for each
+variable within each income category, ensuring proper ordering of income
+classes. This script generates a table displaying average values for median age,
+youth unemployment rate, and net migration rate, categorized by income status
+(Low income, Lower-middle income, Upper-middle income, High income). Analyzing
+these results provides insights into variations across income levels in terms of
+demographic and economic indicators, such as median age, youth unemployment
+rate, and net migration rate.
+
+## Task n:
+
+'''{r n} \# Table of standard deviation for median age, youth unemployment rate,
+and net migration rate separated by income status std_dev_values \<- df_vars
+%\>% group_by(income_group) %\>% summarise( std_dev_median_age =
+sd(`median_age`, na.rm = TRUE), std_dev_youth_unemployment_rate =
+sd(`youth_unemployed_rate`, na.rm = TRUE), std_dev_net_migration_rate =
+sd(`net_migration_rate`, na.rm = TRUE) )
+
+# Reorder income_group as factor with proper order
+
+std_dev_values$income_group <- factor(std_dev_values$income_group, levels =
+income_order)
+
+# Print the table
+
+print(std_dev_values) 
+''' 
+Looking at the standard deviation instead of the mean
+provides additional insights into the variability of the data within each income
+group. For example, the standard deviation for youth unemployment rate tends to
+be higher in lower income groups, indicating greater variability in youth
+unemployment rates among lower income countries. Analyzing both the mean and
+standard deviation provides insights into data variability within each income
+status category. Higher standard deviations indicate greater variability, while
+lower ones suggest less variability. This assessment helps understand the
+variability within income status categories, reflecting diverse demographic or
+economic conditions with higher standard deviations. For example, a higher
+standard deviation in youth unemployment rate may signal varying economic
+instability, while a higher standard deviation in net migration rate may
+indicate diverse population movement patterns. In summary, considering both
+measures offers a comprehensive understanding of demographic and economic
+indicators' variability across income status categories.
+
+## Task o:
+
+'''{r o} \# Table of average values for median age, youth unemployment rate, and
+net migration rate separated by income status and continent avg_values_continent
+\<- df_vars %\>% group_by(income_group, continent) %\>% summarise(
+avg_median_age = mean(`median_age`, na.rm = TRUE), avg_youth_unemployment_rate =
+mean(`youth_unemployed_rate`, na.rm = TRUE), avg_net_migration_rate =
+mean(`net_migration_rate`, na.rm = TRUE) )
+
+# Reorder income_group as factor with proper order
+
+avg_values_continent$income_group <- factor(avg_values_continent$income_group,
+levels = income_order)
+
+# Print the table
+
+print(avg_values_continent) 
+''' 
+The analysis of average values for median age,
+youth unemployment rate, and net migration rate separated by income status and
+continent provides insights into the economic and demographic characteristics of
+countries within each income group and continent. For example, high income
+countries in Europe tend to have higher median ages and lower youth unemployment
+rates compared to high income countries in other continents. To analyze various
+income status and continent combinations, we'll group the data accordingly and
+calculate standard deviations for each variable. This approach helps us
+understand the variability of demographic and economic indicators within each
+specific combination. The resulting table will show standard deviation values
+for each income status and continent pairing. Analyzing these results provides
+insight into the diversity of median age, youth unemployment rate, and net
+migration rate across different combinations. Interpreting the results:
+Variability Across Income Status and Continent: We can observe how variability
+in demographic and economic indicators differs across income status categories
+within each continent. For example, low-income countries may have higher
+standard deviations in median age compared to high-income ones. Similarly,
+comparing variability in youth unemployment rate and net migration rate within
+each continent sheds light on economic dynamics. Regional Disparities: Analyzing
+standard deviations unveils regional differences in economic development and
+demographic characteristics. For instance, lower-middle-income countries in
+South America may exhibit greater variability in net migration rate than those
+in North America. Policy Implications: Understanding variability within each
+income status and continent combination informs policy decisions. Policymakers
+can tailor strategies based on unique challenges within each pairing. Overall,
+scrutinizing standard deviation values offers valuable insights into demographic
+and economic diversity. This informs targeted interventions aimed at promoting
+development and reducing inequalities within and across continents.
+
+## Task p:
+
+'''{r p} \# Identify countries with top 25% net migration rate and bottom 25%
+youth unemployment rate for each continent top_migration_bottom_unemployment \<-
+df_vars %\>% group_by(continent) %\>% mutate( top_25_migration =
+ifelse(rank(desc(`net_migration_rate`)) \<= n() / 4, TRUE, FALSE),
+bottom_25_unemployment = ifelse(rank(`youth_unemployed_rate`) \<= n() / 4, TRUE,
+FALSE) ) %\>% filter(top_25_migration & bottom_25_unemployment) %\>%
+select(country, continent, `net_migration_rate`, `youth_unemployed_rate`)
+
+# Print the identified countries
+
+print(top_migration_bottom_unemployment) 
+''' 
+The identified countries are those
+that are in the top 25% in terms of net migration rate and in the bottom 25% in
+terms of youth unemployment rate within their respective continents. These
+countries are considered to be doing well in terms of both indicators. These
+countries are performing well in terms of both net migration rate and youth
+unemployment rate, suggesting favorable economic and social conditions relative
+to other countries within their respective continents. To pinpoint nations
+excelling in both youth unemployment and net migration rate, we followed these
+steps: Computed quartiles for net migration rate and youth unemployment rate
+within each continent. Located countries ranking in the top 25% for net
+migration rate and the bottom 25% for youth unemployment rate within their
+respective continents. Determined the overlap of these countries to identify
+those meeting both criteria. This procedure will uncover countries meeting the
+outlined standards across continents. Such nations represent potential success
+stories in effectively handling both youth unemployment and migration dynamics
+within their continents. Recognizing these countries offers insights into
+successful policies and strategies fostering economic opportunities for youth
+while managing migration trends.
+
+## Task r:
+
+'''{r r} \# Replace missing values with "." df_vars_export \<- df_vars
+df_vars_export[is.na(df_vars_export)] \<- "."
+
+# Export the final dataset to a CSV file
+
+write.csv(df_vars_export, file = "final_dataset.csv", sep = ";", row.names =
+FALSE) 
+''' 
+To save the ultimate dataset to a CSV file with ";" as the separator
+and "." representing missing values, while omitting row names, you can employ
+the write.csv() function with specific parameters. Executing this code will
+substitute missing values with ".", remove row names, and store the resultant
+dataset in a CSV file named "final_dataset.csv" with ";" as the separator.
