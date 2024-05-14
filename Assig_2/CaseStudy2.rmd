@@ -352,11 +352,11 @@ the regions.
 
 ## Task l:
 
-'''{r l} \# Low-middle income countries in the Americas
-low_middle_income_americas \<-
-df_vars[df_vars$region %in% c("north america", "south america") & df_vars$income_group
-== "lower middle income", ] low_middle_income_americas\$country 
-''' 
+```{r l} 
+# Low-middle income countries in the Americas
+low_middle_income_americas <- df_vars[df_vars$region %in% c("north america", "south america") & df_vars$income_group == "lower middle income", ]
+low_middle_income_americas$country
+``` 
 The low-middle income countries in the Americas are not primarily small island
 states in the Caribbean. Instead, they include countries like Bolivia, Guyana,
 and Paraguay, among others. These countries are not primarily small island
@@ -374,25 +374,25 @@ other patterns across the Americas.
 
 ## Task m:
 
-'''{r m} \# Table of average values for median age, youth unemployment rate, and
-net migration rate separated by income status avg_values \<- df_vars %\>%
-group_by(income_group) %\>% summarise( avg_median_age = mean(`median_age`, na.rm
-= TRUE), avg_youth_unemployment_rate = mean(`youth_unemployed_rate`, na.rm =
-TRUE), avg_net_migration_rate = mean(`net_migration_rate`, na.rm = TRUE) )
+```{r m} 
+# Table of average values for median age, youth unemployment rate, and net migration rate separated by income status
+avg_values <- df_vars %>%
+  group_by(income_group) %>%
+  summarise(
+    avg_median_age = mean(`median_age`, na.rm = TRUE),
+    avg_youth_unemployment_rate = mean(`youth_unemployed_rate`, na.rm = TRUE),
+    avg_net_migration_rate = mean(`net_migration_rate`, na.rm = TRUE)
+  )
 
 # Define proper ordering of income classes
-
-income_order \<- c("L", "LM", "UM", "H")
+income_order <- c("L", "LM", "UM", "H")
 
 # Reorder income_group as factor with proper order
-
-avg_values$income_group <- factor(avg_values$income_group, levels =
-income_order)
+avg_values$income_group <- factor(avg_values$income_group, levels = income_order)
 
 # Print the table
-
-print(avg_values) 
-''' 
+print(avg_values)
+```
 The table of average values for median age, youth
 unemployment rate, and net migration rate separated by income status shows that
 as income status increases, the median age tends to increase, while both youth
@@ -414,22 +414,22 @@ rate, and net migration rate.
 
 ## Task n:
 
-'''{r n} \# Table of standard deviation for median age, youth unemployment rate,
-and net migration rate separated by income status std_dev_values \<- df_vars
-%\>% group_by(income_group) %\>% summarise( std_dev_median_age =
-sd(`median_age`, na.rm = TRUE), std_dev_youth_unemployment_rate =
-sd(`youth_unemployed_rate`, na.rm = TRUE), std_dev_net_migration_rate =
-sd(`net_migration_rate`, na.rm = TRUE) )
+```{r n} 
+# Table of standard deviation for median age, youth unemployment rate, and net migration rate separated by income status
+std_dev_values <- df_vars %>%
+  group_by(income_group) %>%
+  summarise(
+    std_dev_median_age = sd(`median_age`, na.rm = TRUE),
+    std_dev_youth_unemployment_rate = sd(`youth_unemployed_rate`, na.rm = TRUE),
+    std_dev_net_migration_rate = sd(`net_migration_rate`, na.rm = TRUE)
+  )
 
 # Reorder income_group as factor with proper order
-
-std_dev_values$income_group <- factor(std_dev_values$income_group, levels =
-income_order)
+std_dev_values$income_group <- factor(std_dev_values$income_group, levels = income_order)
 
 # Print the table
-
-print(std_dev_values) 
-''' 
+print(std_dev_values)
+``` 
 Looking at the standard deviation instead of the mean
 provides additional insights into the variability of the data within each income
 group. For example, the standard deviation for youth unemployment rate tends to
@@ -448,22 +448,22 @@ indicators' variability across income status categories.
 
 ## Task o:
 
-'''{r o} \# Table of average values for median age, youth unemployment rate, and
-net migration rate separated by income status and continent avg_values_continent
-\<- df_vars %\>% group_by(income_group, continent) %\>% summarise(
-avg_median_age = mean(`median_age`, na.rm = TRUE), avg_youth_unemployment_rate =
-mean(`youth_unemployed_rate`, na.rm = TRUE), avg_net_migration_rate =
-mean(`net_migration_rate`, na.rm = TRUE) )
+```{r o} 
+# Table of average values for median age, youth unemployment rate, and net migration rate separated by income status and continent
+avg_values_continent <- df_vars %>%
+  group_by(income_group, continent) %>%
+  summarise(
+    avg_median_age = mean(`median_age`, na.rm = TRUE),
+    avg_youth_unemployment_rate = mean(`youth_unemployed_rate`, na.rm = TRUE),
+    avg_net_migration_rate = mean(`net_migration_rate`, na.rm = TRUE)
+  )
 
 # Reorder income_group as factor with proper order
-
-avg_values_continent$income_group <- factor(avg_values_continent$income_group,
-levels = income_order)
+avg_values_continent$income_group <- factor(avg_values_continent$income_group, levels = income_order)
 
 # Print the table
-
-print(avg_values_continent) 
-''' 
+print(avg_values_continent)
+```
 The analysis of average values for median age,
 youth unemployment rate, and net migration rate separated by income status and
 continent provides insights into the economic and demographic characteristics of
@@ -495,21 +495,21 @@ development and reducing inequalities within and across continents.
 
 ## Task p:
 
-'''{r p} \# Identify countries with top 25% net migration rate and bottom 25%
-youth unemployment rate for each continent top_migration_bottom_unemployment \<-
-df_vars %\>% group_by(continent) %\>% mutate( top_25_migration =
-ifelse(rank(desc(`net_migration_rate`)) \<= n() / 4, TRUE, FALSE),
-bottom_25_unemployment = ifelse(rank(`youth_unemployed_rate`) \<= n() / 4, TRUE,
-FALSE) ) %\>% filter(top_25_migration & bottom_25_unemployment) %\>%
-select(country, continent, `net_migration_rate`, `youth_unemployed_rate`)
+```{r p} 
+# Identify countries with top 25% net migration rate and bottom 25% youth unemployment rate for each continent
+top_migration_bottom_unemployment <- df_vars %>%
+  group_by(continent) %>%
+  mutate(
+    top_25_migration = ifelse(rank(desc(`net_migration_rate`)) <= n() / 4, TRUE, FALSE),
+    bottom_25_unemployment = ifelse(rank(`youth_unemployed_rate`) <= n() / 4, TRUE, FALSE)
+  ) %>%
+  filter(top_25_migration & bottom_25_unemployment) %>%
+  select(country, continent, `net_migration_rate`, `youth_unemployed_rate`)
 
 # Print the identified countries
-
-print(top_migration_bottom_unemployment) 
-''' 
-The identified countries are those
-that are in the top 25% in terms of net migration rate and in the bottom 25% in
-terms of youth unemployment rate within their respective continents. These
+print(top_migration_bottom_unemployment)
+```
+The identified countries are those that are in the top 25% in terms of net migration rate and in the bottom 25% in terms of youth unemployment rate within their respective continents. These
 countries are considered to be doing well in terms of both indicators. These
 countries are performing well in terms of both net migration rate and youth
 unemployment rate, suggesting favorable economic and social conditions relative
@@ -528,14 +528,14 @@ while managing migration trends.
 
 ## Task r:
 
-'''{r r} \# Replace missing values with "." df_vars_export \<- df_vars
-df_vars_export[is.na(df_vars_export)] \<- "."
+```{r r}
+# Replace missing values with "."
+df_vars_export <- df_vars
+df_vars_export[is.na(df_vars_export)] <- "."
 
 # Export the final dataset to a CSV file
-
-write.csv(df_vars_export, file = "final_dataset.csv", sep = ";", row.names =
-FALSE) 
-''' 
+write.csv(df_vars_export, file = "final_dataset.csv", sep = ";", row.names = FALSE)
+```
 To save the ultimate dataset to a CSV file with ";" as the separator
 and "." representing missing values, while omitting row names, you can employ
 the write.csv() function with specific parameters. Executing this code will
