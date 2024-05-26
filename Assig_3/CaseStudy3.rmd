@@ -1,0 +1,135 @@
+---
+title: "Case Study 3"
+subtitle: "Group 97 - Visualization"
+author:
+  - Beccard\, Leon - 12133103
+  - Farmohammadi\, Pouya - 52116495
+  - Monteiro Oliveira\, Guilherme - 12243299
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: True
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    toc_depth: 1
+    theme: readable
+    # number_sections: True
+editor_options: 
+  markdown: 
+    wrap: 80
+---
+
+--------------------------------------------------------------------------------
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(ggplot2)
+```
+
+
+# Data
+Load the data set you exported in the final Task of Case Study 2. Eliminate all observations with missing
+values in the income status variable.
+
+```{r import_data}
+df <- read.csv('./final_dataset.csv')
+nrow(df) # Result is 175
+# Eliminate missing values in the income status variable
+df <- df[!is.na(df$income_group), ]
+nrow(df) # Result is the same 175, since we removed all rows consisting of at least one NA already in task 2
+str(df)
+```
+
+
+# a. Median age in different income levels
+Using ggplot2, create a density plot of the median age grouped by income status groups. The densities for
+the different groups are superimposed in the same plot rather than in different plots. Ensure that you order the levels of the income status such that in the plots the legend is ordered from High (H) to Low (L).
+• The color of the density lines is black.
+• The area under the density curve should be colored differently among the income status levels.
+• For the colors, choose a transparency level of 0.5 for better visibility.
+• Position the legend at the top center of the plot and give it no title (hint: use element_blank()).
+• Rename the x axis as “Median age of population”
+Comment briefly on the plot.
+
+As shown in the plot below, there is a significant peak in the density plot of the low income countries with a density higher than 0.15, referring to a very young median age of the population of approximately 18-19 years. Further it can be seen that the lower middle income countries have their highest density of 25 years, upper middle income countries of 30 years and high income countries have their climax at around 43 years. Especially in the high income density plot, we can see a right-skewed curve, which means the mean is greater than the median. This leads to the interpretation, that as higher the income of a country as higher is the median age of its citizens. 
+
+```{r task_a}
+plot <- ggplot(df, aes(x = median_age, fill = income_group) ) + 
+  geom_density(alpha = 0.5, color = "black") + 
+labs(x = "Median age of population") +
+  theme_minimal()+
+  theme(legend.position = "top",
+        legend.title = element_blank()) 
+
+plot
+```
+
+# b. Income status in different continents
+
+Investigate how the income status is distributed in the different continents.
+• Using ggplot2, create a stacked barplot of absolute frequencies showing how the entities are split into
+continents and income status. Comment the plot.
+• Create another stacked barplot of relative frequencies (height of the bars should be one). Comment the
+plot.
+• Create a mosaic plot of continents and income status using base R functions.
+• Briefly comment on the differences between the three plots generated to investigate the income
+distribution among the different continents.
+
+As shown in this plot, Africa, Asia and Europe have the highest absolute frequencies of countries of approximately 40 countries each. Africa consists mostly of low income and lower middle income countries. Asia almost equally consists of lower middle, upper middle und high income countries. Whereas Europe mainly consists of high income countries and around one fifth of upper middle income countries. Neither in Europe, North America, Oceania nor in South America is a low income country placed.
+```{r task_b_1}
+# Aggregate data to get frequencies
+df_agg <- df %>%
+  count(continent, income_group)
+
+ggplot(df_agg, aes(x = continent, y = n, fill = income_group)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Absolute Frequencies of Income Status by Continent",
+       x = "Continent", y = "Frequency") +
+  theme_minimal()+
+  theme(legend.position = "top",
+        legend.title = element_blank())
+
+```
+
+
+
+
+
+• Create another stacked barplot of relative frequencies (height of the bars should be one). Comment the
+plot.
+With the relative frequency is given, it is easy to compare each income status per continent with each other. This can be done by providing the percentage of each country of a specific income group. For example South America has the biggest proportion of upper middle income countries than any other region, which is difficult to see in the absolute frequency plot. Also Asia, Oceania and South America have a similar proportion of high income countries.
+```{r task_b_2}
+# Calculate relative frequencies
+df_relative <- df_agg %>%
+  group_by(continent) %>%
+  mutate(relative_frequency = n / sum(n))
+
+ggplot(df_relative, aes(x = continent, y = relative_frequency, fill = income_group)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Relative Frequencies of Income Status by Continent",
+       x = "Continent", y = "Relative Frequency") +
+  theme_minimal()+
+  theme(legend.position = "top",
+        legend.title = element_blank())
+
+
+```
+
+• Create a mosaic plot of continents and income status using base R functions.
+```{r task_b_3}
+# Create a contingency table
+contingency_table <- table(data$continent, data$income_group)
+
+# Mosaic plot
+mosaicplot(contingency_table, main = "Mosaic Plot of Continents and Income Status", shade = TRUE, color = TRUE, las = 2)
+```
+• Briefly comment on the differences between the three plots generated to investigate the income
+distribution among the different continents. 
+
+## TODO improve the comments
+The absolute frequency barplot helps identify the magnitude of entities in each income group per continent.
+The relative frequency barplot allows for comparing the proportional distribution of income groups within each continent.
+The mosaic plot offers insights into the relationship and dependencies between continents and income groups, highlighting significant patterns.
