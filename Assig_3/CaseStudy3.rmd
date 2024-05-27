@@ -54,6 +54,8 @@ the different groups are superimposed in the same plot rather than in different 
 • Rename the x axis as “Median age of population”
 Comment briefly on the plot.
 
+### Answer
+
 As shown in the plot below, there is a significant peak in the density plot of the low income countries with a density higher than 0.15, referring to a very young median age of the population of approximately 18-19 years. Further it can be seen that the lower middle income countries have their highest density of 25 years, upper middle income countries of 30 years and high income countries have their climax at around 43 years. Especially in the high income density plot, we can see a right-skewed curve, which means the mean is greater than the median. This leads to the interpretation, that as higher the income of a country as higher is the median age of its citizens. 
 
 ```{r task_a}
@@ -78,6 +80,8 @@ plot.
 • Briefly comment on the differences between the three plots generated to investigate the income
 distribution among the different continents.
 
+### Answer
+
 As shown in this plot, Africa, Asia and Europe have the highest absolute frequencies of countries of approximately 40 countries each. Africa consists mostly of low income and lower middle income countries. Asia almost equally consists of lower middle, upper middle und high income countries. Whereas Europe mainly consists of high income countries and around one fifth of upper middle income countries. Neither in Europe, North America, Oceania nor in South America is a low income country placed.
 ```{r task_b_1}
 # Aggregate data to get frequencies
@@ -100,6 +104,7 @@ ggplot(df_agg, aes(x = continent, y = n, fill = income_group)) +
 
 • Create another stacked barplot of relative frequencies (height of the bars should be one). Comment the
 plot.
+### Answer
 With the relative frequency is given, it is easy to compare each income status per continent with each other. This can be done by providing the percentage of each country of a specific income group. For example South America has the biggest proportion of upper middle income countries than any other region, which is difficult to see in the absolute frequency plot. Also Asia, Oceania and South America have a similar proportion of high income countries.
 ```{r task_b_2}
 # Calculate relative frequencies
@@ -121,15 +126,132 @@ ggplot(df_relative, aes(x = continent, y = relative_frequency, fill = income_gro
 • Create a mosaic plot of continents and income status using base R functions.
 ```{r task_b_3}
 # Create a contingency table
-contingency_table <- table(data$continent, data$income_group)
+contingency_table <- table(df$continent, df$income_group)
 
 # Mosaic plot
-mosaicplot(contingency_table, main = "Mosaic Plot of Continents and Income Status", shade = TRUE, color = TRUE, las = 2)
+mosaicplot(contingency_table, main = "Mosaic Plot of Continents and Income Status", shade = TRUE, color = TRUE, las=2)
 ```
 • Briefly comment on the differences between the three plots generated to investigate the income
-distribution among the different continents. 
+distribution among the different continents.
 
-## TODO improve the comments
-The absolute frequency barplot helps identify the magnitude of entities in each income group per continent.
-The relative frequency barplot allows for comparing the proportional distribution of income groups within each continent.
-The mosaic plot offers insights into the relationship and dependencies between continents and income groups, highlighting significant patterns.
+### Answer
+
+With a stacked barplot of absolute frequencies the total amount can be investigated quickly between each continent. This makes it easy to analyze exact numbers of countries per continent but harder to compare continents by their income group with a different amount of countries.
+The stacked barplot of relative frequencies conveys a better understanding of occurrences of each income group per continent. This makes it far easier to compare continents with a significant difference of total countries by their income groups.
+The mosaic plot is not as intuitively as the other two plots. First, it can be easily observed that the distributions are the same of the relative frequency stacked barplot. The add-on is now the colouring of each rectangle with a meaning namely representing the standardized residual. As shown on the legend, the standardized residual  with a positive value means that the observed count is higher than the expected count i.e. blue rectangles or white rectangles with a solid line this. The same meaning goes the other way around for negative residuals.
+This gives us the insight that especially Europe with their amount of high income countries and Africa with their amount of low income countries significantly differfrom what would be expected under the assumption of independence.
+
+# c. Income status in different subcontinents
+For Asia, investigate further how the income status distribution is in the different subcontinents. Use one of the plots in b. for this purpose. Comment on the results.
+```{r task_c}
+# Filter the dataset for Asian countries
+asia_subset <- subset(df, continent == "asia")
+
+# Calculate relative frequencies
+asia_data_rel <- asia_subset %>%
+  group_by(region, income_group) %>%
+  summarise(count = n()) %>%
+  mutate(freq = count / sum(count))
+
+# Create a bar plot of income group distribution by region
+ggplot(asia_data_rel, aes(x = region, y = freq, fill = income_group)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Relative Frequency of Income Group by Region in Asia",
+       x = "Region",
+       y = "Relative Frequency",
+       fill = "Income Group") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+Central asia, South-eastern asia and southern asia have mostly lower middle income countries. Even though for Central asia this is not totally correct since it has just as many upper middle income countries as well. Eastern asia and western asia on the opposite have mainly high income countries. Only western asia consists of all income groups whereas the other subcontinents have at least one (south-eastern asia and souther asia) or two income groups (central asia and eastern asia) missing. 
+
+# d. Net migration in different continents
+• Using ggplot2, create parallel boxplots showing the distribution of the net migration rate in the
+different continents.
+• Prettify the plot (change y-, x-axis labels, etc).
+• Identify which country in Asia constitutes the largest negative outlier and which country in Asia
+constitutes the largest positive outlier.
+• Comment on the plot.
+
+```{r task_d}
+ggplot(df, aes(x = continent, y = net_migration_rate)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 16, outlier.size = 2) +
+  labs(title = "Distribution of Net Migration Rate by Continent",
+       x = "Continent",
+       y = "Net Migration Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+### Answer
+In the plot we can observe Oceania has the highest distribution of net migration rate with the biggest interquartile range and the longest whiskers. 50% of its data is approximately between 0 and -7.5 and its median of -3.5. Europe and Asia also have a higher interquartile range in terms of the net migration rate. Especially Asia stands out with a lot of outliers. On the other hand Africa, North America and South America all have relatively small boxplots around zero meaning that their interquartile range is not as high besides several outliers. Especially for South America it seems that almost every country has a net migration of 0 with only one outlier, which is still quite close to the interquartile range at approximately -2.
+
+
+```{r task_d_2}
+# Identify the largest negative and positive outliers in Asia
+asia_data <- df %>% filter(continent == "asia")
+
+largest_negative_outlier <- asia_data %>% filter(net_migration_rate == min(net_migration_rate))
+largest_positive_outlier <- asia_data %>% filter(net_migration_rate == max(net_migration_rate))
+
+largest_negative_outlier
+largest_positive_outlier
+```
+
+Here, we can observe that the island state Maldives have the lowest net_migration_rate of -12,7 and is therefore the largest negative outlier. Syria on the other side has the highest net_migration_rate of 27.1	 and is therefore the largest positive outlier. For both countries it seems reasonable that they stay as outliers since the Maldives have a strong economy relying on tourism, which attracts many people to work there and leads to a negative migration rate. For Syria it is known that the political situation is very unstable and there has even been a war, which leads to high migration rate of people fleeing out of the country.
+
+# e. Net migration in different subcontinents
+The graph in d. clearly does not convey the whole picture. It would be interesting also to look at the
+subcontinents, as it is likely that a lot of migration flows happen within the continent.
+• Investigate the net migration in different subcontinents using again parallel boxplots. Group the
+boxplots by continent (hint: use facet_grid with scales = "free_x").
+• Remember to prettify the plot (rotate axis labels if needed).
+• Describe what you see.
+```{r task_e}
+ggplot(asia_subset, aes(x = region, y = net_migration_rate)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 16, outlier.size = 2) +
+  facet_grid(. ~ continent, scales = "free_x") +
+  labs(title = "Distribution of Net Migration Rate by asian subcontinents",
+       x = "Subcontinents",
+       y = "Net Migration Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+```{r task_e1}
+europe_subset <- subset(df, continent== 'europe')
+
+ggplot(europe_subset, aes(x = region, y = net_migration_rate)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 16, outlier.size = 2) +
+  facet_grid(. ~ continent, scales = "free_x") +
+  labs(title = "Distribution of Net Migration Rate by european subcontinents",
+       x = "Subcontinents",
+       y = "Net Migration Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+```{r task_e2}
+africa_subset <- subset(df, continent== 'africa')
+
+ggplot(africa_subset, aes(x = region, y = net_migration_rate)) +
+  geom_boxplot(outlier.color = "red", outlier.shape = 16, outlier.size = 2) +
+  facet_grid(. ~ continent, scales = "free_x") +
+  labs(title = "Distribution of Net Migration Rate by african subcontinents",
+       x = "Subcontinents",
+       y = "Net Migration Rate") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### Answer
+
+For the Asian subcontinent plot eastern asia, south-eastern asia and souther asia have a very short interquartile range (IQR) around zero. Eastern asia stands out as the only subcontinent with a clearly positive median. Central asia is the only subcontinent where most of the countries have a negative migration rate. Western asia has the highest IQR with the longest whiskers from appr. 10 to -10 net migration rate and also the highest positive outlier of appr. 15, which makes it the most interesting to investigate this further. An assumption can be made that this subcontinent consists of the most countries.
+
+For Europe, there are four subcontinents all having a median and almost an IQR between zero and five. Only northern europe stands out with a negative net migration rate until -5, seen by their whiskers. Eastern europe has one outlier, which must be the country with the lowest net migration rate. Western europe has the other outlier of this plot, which has to be the country with the highest net migration rate.
+
+For Africa, there are five subcontients. Middle africa has two outliers. One with the highest and one with the lowest net migration rate overall in Africa. Middle and northern africa have a very small IQR and almost no whiskers, staying between 0 and -2. Western and eastern africa have relatively bigger IQR than the one before filling up the whole range of 0 to -2. Again, there is one subcontinent namely southern africa with a high IQR comparatively with a range from 0 to -6. Its median though is close to 0, which means that the distribution of this subcontinent is left-skewed and there are many countries with a net migration rate of around zero.
