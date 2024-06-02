@@ -187,7 +187,6 @@ ggplot(df, aes(x = continent, y = net_migration_rate)) +
 ### Answer
 In the plot we can observe Oceania has the highest distribution of net migration rate with the biggest interquartile range and the longest whiskers. 50% of its data is approximately between 0 and -7.5 and its median of -3.5. Europe and Asia also have a higher interquartile range in terms of the net migration rate. Especially Asia stands out with a lot of outliers. On the other hand Africa, North America and South America all have relatively small boxplots around zero meaning that their interquartile range is not as high besides several outliers. Especially for South America it seems that almost every country has a net migration of 0 with only one outlier, which is still quite close to the interquartile range at approximately -2.
 
-
 ```{r task_d_2}
 # Identify the largest negative and positive outliers in Asia
 asia_data <- df %>% filter(continent == "asia")
@@ -208,6 +207,7 @@ subcontinents, as it is likely that a lot of migration flows happen within the c
 boxplots by continent (hint: use facet_grid with scales = "free_x").
 • Remember to prettify the plot (rotate axis labels if needed).
 • Describe what you see.
+
 ```{r task_e}
 ggplot(asia_subset, aes(x = region, y = net_migration_rate)) +
   geom_boxplot(outlier.color = "red", outlier.shape = 16, outlier.size = 2) +
@@ -255,3 +255,97 @@ For the Asian subcontinent plot eastern asia, south-eastern asia and souther asi
 For Europe, there are four subcontinents all having a median and almost an IQR between zero and five. Only northern europe stands out with a negative net migration rate until -5, seen by their whiskers. Eastern europe has one outlier, which must be the country with the lowest net migration rate. Western europe has the other outlier of this plot, which has to be the country with the highest net migration rate.
 
 For Africa, there are five subcontients. Middle africa has two outliers. One with the highest and one with the lowest net migration rate overall in Africa. Middle and northern africa have a very small IQR and almost no whiskers, staying between 0 and -2. Western and eastern africa have relatively bigger IQR than the one before filling up the whole range of 0 to -2. Again, there is one subcontinent namely southern africa with a high IQR comparatively with a range from 0 to -6. Its median though is close to 0, which means that the distribution of this subcontinent is left-skewed and there are many countries with a net migration rate of around zero.
+
+
+```{r}
+df <- read.csv('/mnt/data/final_dataset.csv')
+nrow(df) # Result is 175
+# Eliminate missing values in the income status variable
+df <- df[!is.na(df$income_group), ]
+nrow(df) # Result is the same 175, since we removed all rows consisting of at least one NA already in task 2
+str(df)
+head(df)
+
+```
+
+
+```{r task-f}
+library(forcats)
+
+# Task f: Median net migration rate per subcontinent
+median_migration <- df %>%
+  group_by(subcontinent, continent) %>%
+  summarize(median_net_migration_rate = median(net_migration_rate, na.rm = TRUE))
+
+ggplot(median_migration, aes(x = median_net_migration_rate, y = fct_reorder(subcontinent, median_net_migration_rate), color = continent)) +
+  geom_point() +
+  labs(x = "Median Net Migration Rate", y = "Subcontinent") +
+  theme_minimal()
+
+```
+
+    Calculate the median net migration rate for each subcontinent. Create a scatter plot with subcontinents on the y-axis and median net migration rate on the x-axis. Use points as geoms, color them by continent using a colorblind-friendly palette, and reorder subcontinents using fct_reorder. We'll calculate the median net migration rate for each subcontinent and create a scatter plot of subcontinents on the y-axis and the median net migration rate on the x-axis, colored by continent.
+
+
+```{r task-g}
+
+# Task g: Median youth unemployment rate per subcontinent
+median_unemployment <- df %>%
+  group_by(subcontinent, continent) %>%
+  summarize(median_youth_unemployment_rate = median(youth_unemployment_rate, na.rm = TRUE))
+
+ggplot(median_unemployment, aes(x = median_youth_unemployment_rate, y = fct_reorder(subcontinent, median_youth_unemployment_rate), fill = continent)) +
+  geom_bar(stat = "identity", alpha = 0.7) +
+  labs(x = "Median Youth Unemployment Rate", y = "Subcontinent") +
+  theme_bw()
+
+
+```
+
+    Calculate the median youth unemployment rate for each subcontinent. Create a bar plot with subcontinents on the y-axis and median youth unemployment rate on the x-axis. Use bars as geoms, color them by continent using a colorblind-friendly palette, make bars transparent, and reorder subcontinents using fct_reorder. We'll calculate the median youth unemployment rate for each subcontinent and create a bar plot of subcontinents on the y-axis and the median youth unemployment rate on the x-axis.
+
+```{r task-h}
+
+# Task h: Median youth unemployment rate per subcontinent – with error bars
+unemployment_stats <- df %>%
+  group_by(subcontinent, continent) %>%
+  summarize(median_youth_unemployment_rate = median(youth_unemployment_rate, na.rm = TRUE),
+            Q1 = quantile(youth_unemployment_rate, 0.25, na.rm = TRUE),
+            Q3 = quantile(youth_unemployment_rate, 0.75, na.rm = TRUE))
+
+ggplot(unemployment_stats, aes(x = median_youth_unemployment_rate, y = fct_reorder(subcontinent, median_youth_unemployment_rate), fill = continent)) +
+  geom_bar(stat = "identity", alpha = 0.7) +
+  geom_errorbar(aes(xmin = Q1, xmax = Q3), width = 0.2) +
+  labs(x = "Median Youth Unemployment Rate", y = "Subcontinent") +
+  theme_bw()
+
+```
+
+    Calculate the 25th and 75th quantiles for youth unemployment rate per subcontinent. Repeat the bar plot from Task g, but include error bars reflecting these quantiles. We'll include error bars in the plot from Task (g) reflecting the 25% and 75% quantiles. Let's execute these steps one by one to generate the visualizations and analysis.
+
+```{r task-i}
+
+# Task i: Relationship between median age and net migration rate
+ggplot(df, aes(x = median_age, y = net_migration_rate, color = income_group)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Median Age", y = "Net Migration Rate") +
+  theme_minimal()
+
+
+```
+
+    Create a scatter plot showing the relationship between median age and net migration rate. I Colored the points by income status, add regression lines for each income status using geom_smooth.
+
+```{r task-j}
+
+# Task j: Relationship between youth unemployment and net migration rate
+ggplot(df, aes(x = youth_unemployment_rate, y = net_migration_rate, color = income_group)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Youth Unemployment Rate", y = "Net Migration Rate") +
+  theme_minimal()
+
+```
+
+     we Created a scatter plot showing the relationship between youth unemployment rate and net migration rate. I Colored the points by income status, add regression lines for each income status using geom_smooth.
