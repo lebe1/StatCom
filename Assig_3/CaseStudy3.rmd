@@ -258,10 +258,14 @@ For Africa, there are five subcontients. Middle africa has two outliers. One wit
 
 
 ```{r}
-df <- read.csv('/mnt/data/final_dataset.csv')
 nrow(df) # Result is 175
 # Eliminate missing values in the income status variable
 df <- df[!is.na(df$income_group), ]
+
+df$subcontinent <- df$region
+df$region<-NULL
+
+
 nrow(df) # Result is the same 175, since we removed all rows consisting of at least one NA already in task 2
 str(df)
 head(df)
@@ -349,3 +353,7 @@ ggplot(df, aes(x = youth_unemployment_rate, y = net_migration_rate, color = inco
 ```
 
      we Created a scatter plot showing the relationship between youth unemployment rate and net migration rate. I Colored the points by income status, add regression lines for each income status using geom_smooth.
+
+
+
+
