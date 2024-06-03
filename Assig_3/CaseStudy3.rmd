@@ -291,33 +291,50 @@ ggplot(median_migration, aes(x = median_net_migration_rate, y = fct_reorder(subc
     Calculate the median net migration rate for each subcontinent. Create a scatter plot with subcontinents on the y-axis and median net migration rate on the x-axis. Use points as geoms, color them by continent using a colorblind-friendly palette, and reorder subcontinents using fct_reorder. We'll calculate the median net migration rate for each subcontinent and create a scatter plot of subcontinents on the y-axis and the median net migration rate on the x-axis, colored by continent.
 
 
-```{r task-g}
+```{r task-g, warning=FALSE, message=FALSE}
 
-# Task g: Median youth unemployment rate per subcontinent
+# Calculate median youth unemployment rate for each subcontinent
 median_unemployment <- df %>%
   group_by(subcontinent, continent) %>%
-  summarize(median_youth_unemployment_rate = median(youth_unemployment_rate, na.rm = TRUE))
-
-ggplot(median_unemployment, aes(x = median_youth_unemployment_rate, y = fct_reorder(subcontinent, median_youth_unemployment_rate), fill = continent)) +
-  geom_bar(stat = "identity", alpha = 0.7) +
+  summarize(youth_unemployed_rate = median(youth_unemployed_rate, na.rm = TRUE))
+```
+```{r, message=FALSE}
+median_youth_unemployment <- median_unemployment %>%
+  group_by(subcontinent, continent) %>%
+  summarize(median_youth_unemployment_rate = median(youth_unemployed_rate, na.rm = TRUE))
+```
+```{r}
+# Merge the median youth unemployment data back with the original data to get continent information
+df <- left_join(df, median_youth_unemployment, by = c("subcontinent" = "subcontinent"))
+```
+```{r}
+ggplot(median_unemployment, aes(x = youth_unemployed_rate, y = fct_reorder(subcontinent, youth_unemployed_rate), color = continent)) +
+  geom_bar(stat = "identity") +
   labs(x = "Median Youth Unemployment Rate", y = "Subcontinent") +
-  theme_bw()
+  theme_minimal()
+
 
 
 ```
 
+
     Calculate the median youth unemployment rate for each subcontinent. Create a bar plot with subcontinents on the y-axis and median youth unemployment rate on the x-axis. Use bars as geoms, color them by continent using a colorblind-friendly palette, make bars transparent, and reorder subcontinents using fct_reorder. We'll calculate the median youth unemployment rate for each subcontinent and create a bar plot of subcontinents on the y-axis and the median youth unemployment rate on the x-axis.
+
+```{r}
+df
+```
+
 
 ```{r task-h}
 
 # Task h: Median youth unemployment rate per subcontinent – with error bars
 unemployment_stats <- df %>%
-  group_by(subcontinent, continent) %>%
-  summarize(median_youth_unemployment_rate = median(youth_unemployment_rate, na.rm = TRUE),
-            Q1 = quantile(youth_unemployment_rate, 0.25, na.rm = TRUE),
-            Q3 = quantile(youth_unemployment_rate, 0.75, na.rm = TRUE))
+  group_by(subcontinent, continent.x) %>%
+  summarize(median_youth_unemployment_rate = median(youth_unemployed_rate, na.rm = TRUE),
+            Q1 = quantile(youth_unemployed_rate, 0.25, na.rm = TRUE),
+            Q3 = quantile(youth_unemployed_rate, 0.75, na.rm = TRUE))
 
-ggplot(unemployment_stats, aes(x = median_youth_unemployment_rate, y = fct_reorder(subcontinent, median_youth_unemployment_rate), fill = continent)) +
+ggplot(unemployment_stats, aes(x = median_youth_unemployment_rate, y = fct_reorder(subcontinent, median_youth_unemployment_rate), fill = continent.x)) +
   geom_bar(stat = "identity", alpha = 0.7) +
   geom_errorbar(aes(xmin = Q1, xmax = Q3), width = 0.2) +
   labs(x = "Median Youth Unemployment Rate", y = "Subcontinent") +
@@ -344,7 +361,7 @@ ggplot(df, aes(x = median_age, y = net_migration_rate, color = income_group)) +
 ```{r task-j}
 
 # Task j: Relationship between youth unemployment and net migration rate
-ggplot(df, aes(x = youth_unemployment_rate, y = net_migration_rate, color = income_group)) +
+ggplot(df, aes(x = youth_unemployed_rate, y = net_migration_rate, color = income_group)) +
   geom_point() +
   geom_smooth(method = "lm") +
   labs(x = "Youth Unemployment Rate", y = "Net Migration Rate") +
