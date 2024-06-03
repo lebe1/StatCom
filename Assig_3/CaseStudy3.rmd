@@ -388,9 +388,22 @@ The data was obtained from the World Bank in the link
 ```{r task_k}
 
 # Load the population data
-population_data <- read_csv("API_SP.POP.TOTL_DS2_en_csv_v2_3011801.csv")
+population_data <- read_csv("./API_SP.POP.TOTL_DS2_en_csv_v2_45183.csv", skip = 4)
+
+population_data <- population_data %>%
+  select(`Country Name`, `Country Code`, `2020`) %>%
+  rename(country = `Country Name`, iso_code = `Country Code`, population = `2020`)
+
+# merge
+
+df <- left_join(df, population_data, by = c("country" = "country"))
 
 ```
+
+```{r}
+df
+```
+
 
 
 # l. Scatterplot of median age and net migration rate in Europe
