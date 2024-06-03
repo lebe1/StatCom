@@ -528,11 +528,21 @@ One can create such a plot using the GGally R package. You should create such a 
 
 # Parallel coordinate plot
 
-ggparcoord(df, columns = match(c("median_age", "youth_unemployed_rate", "net_migration_rate"), names(df)), groupColumn = "income_group", showPoints = TRUE, title = "Parallel Coordinate Plot")
+ggparcoord(df, columns = match(c("median_age", "youth_unemployed_rate", "net_migration_rate"), names(df)), groupColumn = "income_group", scale = "center", showPoints = TRUE, title = "Parallel Coordinate Plot - Centered")
 
 
 ```
 
+```{r task_n2}
+
+# Parallel coordinate plot
+
+ggparcoord(df, columns = match(c("median_age", "youth_unemployed_rate", "net_migration_rate"), names(df)), groupColumn = "income_group", scale = "globalminmax", showPoints = TRUE, title = "Parallel Coordinate Plot - Min Max")
+
+
+```
+
+In the parallel coordinate plot, we can see that the countries with higher income have a higher median age and the count of youth unemployment rate is lower and higher net migration rate. The countries with lower income have a lower median age, distributed youth unemployment rate and almost zero net migration rate, what can mean the population is unable to leave.
 
 
 # o. World map visualisation
@@ -541,13 +551,13 @@ Using the package rworldmap, create a world map of the median age per country. U
 
 ```{r task_o}
 
-sPDF <- joinCountryData2Map(df, joinCode = "NAME", nameJoinColumn = "country")
+sPDF <- joinCountryData2Map(df, joinCode = "ISO3", nameJoinColumn = "iso_code")
 
 # Plot the map
 mapParams <- mapCountryData(sPDF, nameColumnToPlot = "median_age", mapTitle = "Median Age per Country")
 
 # Adjust the legend
-do.call(addMapLegend, c(mapParams, legendWidth = 0.5, legendMar = 2))
+do.call(addMapLegend, c(mapParams, legendWidth = 0.5))
 
 
 ```
