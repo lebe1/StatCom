@@ -10,8 +10,18 @@
 library(shiny)
 library(jsonlite)
 library(DT)
+library(plotly)
+library(ggplot2)
+library(dplyr)
 
 df <- fromJSON("../data_cia.json")
+
+column_names <- c("Median Age" = "median_age", 
+                  "Youth Unemployment Rate" = "youth_unempl_rate", 
+                  "Net Migration Rate" = "net_migr_rate",
+                  "Population Growth Rate" = "pop_growth_rate", 
+                  "Electricity Fossil Fuel" = "electricity_fossil_fuel", 
+                  "Life Expectancy" = "life_expectancy")
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -24,12 +34,7 @@ ui <- fluidPage(
                sidebarLayout(
                  sidebarPanel(
                    selectInput("variable", "Select a variable",
-                               choices = c("median age", 
-                                           "youth unemployment rate", 
-                                           "net migration rate", 
-                                           "population growth rate", 
-                                           "electricity fossil fuel", 
-                                           "life expectancy")),
+                               choices = column_names),
                    actionButton("raw", "View raw data", icon = icon("th", lib="glyphicon")),
                    DTOutput("dynamic"),
                  ),
@@ -37,9 +42,13 @@ ui <- fluidPage(
                    tabsetPanel(
                      tabPanel("Map",
                               titlePanel("Beatutiful title"),
+                              plotlyOutput("map", width = "100%")
                               ),
-                     tabPanel("Boxplot (overall)"),
-                     tabPanel("Boxplot per continent"),
+                     tabPanel("Boxplot (overall)",
+                              plotlyOutput("boxplot", width = "100%")
+                              ),
+                     tabPanel("Boxplot per continent",
+                              plotlyOutput("box_cnt", width = "100%")),
                     ),
                    )
                ),
@@ -52,12 +61,39 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+
   observeEvent(input$raw, {
     output$dynamic <- renderDT({
-      df
-    }, options = list)
+      df_subset <- df[c('country', 'continent', input$variable)]
+      colnames(df_subset) <- c("Country", "Continent", 
+                               names(column_names)[column_names == input$variable])
+      df_subset
+    }, options = list(pageLength = 15,
+                      scrollX = TRUE))
     
   })
+  
+  output$map <- renderPlotly({
+
+    fig <- plot_ly(df, type='choropleth', locations=df$ISO3, 
+                   z=df[[input$variable]], text = df$country,
+                   colorscale='Viridis')
+    fig
+  })
+  
+  output$boxplot <- renderPlotly({
+    fig <- plot_ly(y = df[[input$variable]], type = "box")
+    
+    fig
+  })
+  
+  output$box_cnt <- renderPlotly({
+    fig <- plot_ly(x = df$continent , y = df[[input$variable]], 
+                   type = "box", color = df$continent)
+    
+    fig
+  })
+  
   
 }
 
