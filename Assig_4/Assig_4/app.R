@@ -14,7 +14,7 @@ library(plotly)
 library(ggplot2)
 library(dplyr)
 
-df <- fromJSON("../data_cia.json")
+df <- fromJSON("data_cia.json")
 
 # Convert population to numeric
 df$population <- as.numeric(gsub(",", "", df$population))
@@ -34,6 +34,7 @@ ui <- fluidPage(
     titlePanel("CIA World Factbook 2020"),
     helpText('Welcome to our shiny app. This app is designed to help you explore the CIA World Factbook 2020. 
              You can select a variable from the dropdown menu and view the data in a table (raw data), a map, and boxplots. 
+             We also uploaded our shinyapp on the shinyapps server on this link: https://group97.shinyapps.io/assig_4/
              Enjoy! '),
     tabsetPanel(
       tabPanel("Univariate analysis",
